@@ -17,6 +17,7 @@ public class RemoteStorageMCNPCauses {
     public static final int APPEND = 3;
     public static final int SUB_ARRAY = 4;
     public static final int GET_CONTENT_SIZE = 5;
+    public static final int SET = 6;
 
 
 

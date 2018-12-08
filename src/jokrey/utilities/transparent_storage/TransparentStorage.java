@@ -1,5 +1,7 @@
 package jokrey.utilities.transparent_storage;
 
+import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
+
 /**
  * Generic Storage System for any LIe.
  *
@@ -43,14 +45,6 @@ public interface TransparentStorage<SF> extends AutoCloseable {
     TransparentStorage<SF> delete(long start, long end);
 
     /**
-     * Appends the bytes to the end of the content
-     *
-     * @param val to be appended
-     * @return this object
-     */
-    TransparentStorage<SF> append(SF val);
-
-    /**
      * Returns the bytes between the specified indices
      *     Result can be altered as it is guaranteed to be a (sub)copy of the internal buffer.
      *
@@ -61,6 +55,24 @@ public interface TransparentStorage<SF> extends AutoCloseable {
      * @return the sub
      */
     SF sub(long start, long end);
+
+    /**
+     * Sets the content from start to start+part.length with part,
+     * appending if required.
+     * @param start start index, has to be within bounds
+     * @param part not null
+     */
+    TransparentStorage<SF> set(long start, SF part);
+
+    /**
+     * Appends the bytes to the end of the content
+     *
+     * @param val to be appended
+     * @return this object
+     */
+    default TransparentStorage<SF> append(SF val) {
+        return set(contentSize(), val);
+    }
 
     /**
      * Returns the size of the content.

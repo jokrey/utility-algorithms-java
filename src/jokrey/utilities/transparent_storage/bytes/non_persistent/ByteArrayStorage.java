@@ -136,31 +136,24 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     }
 
 
-    @Override public ByteArrayStorage append(byte[] val) throws StorageSystemException {
-        int new_size = size + val.length;
-        grow_to_at_least(new_size);
 
-        System.arraycopy(val, 0, content, size, val.length);
-        size += val.length;
-        return this;
-    }
-
-
-    @Override public TransparentBytesStorage append(InputStream content, long content_length_long) throws StorageSystemException {
-        if (size + content_length_long > Integer.MAX_VALUE)
+    @Override public TransparentBytesStorage set(long start_long, InputStream content, long content_length_long) throws StorageSystemException {
+        if(start_long > contentSize()) throw new IndexOutOfBoundsException();
+        if (start_long + content_length_long > Integer.MAX_VALUE)
             throw new StorageSystemException("ByteArrayStorage cannot store InputStream of length: " + content_length_long);
+        int start = (int) start_long;
         int promised_content_length = (int) content_length_long;
 
         try {
-            grow_to_at_least(size + promised_content_length);
-            size += promised_content_length; //even if stream fails libae will still be able to continue..
-                                              // Because bytes not filled with meaningful data are at least allocated and calculated as if they were normally written
+            grow_to_at_least(start + promised_content_length);
+            size = (int) Math.max(start+promised_content_length, contentSize());//even if stream fails libae will still be able to continue..
+                                                                                // Because bytes not filled with meaningful data are at least allocated and calculated as if they were normally written
 
             int nRead;
             int total_read = 0;
             byte[] is_buffer = new byte[assumed_page_size];
             while (total_read < promised_content_length && (nRead = content.read(is_buffer, 0, Math.min(is_buffer.length, promised_content_length-total_read))) != -1) {
-                System.arraycopy(is_buffer, 0, this.content,  (size-promised_content_length)+total_read, nRead);
+                System.arraycopy(is_buffer, 0, this.content,  start+total_read, nRead);
 
                 total_read += nRead;
             }
@@ -189,12 +182,19 @@ public class ByteArrayStorage implements TransparentBytesStorage {
             throw new StorageSystemException("Cannot create a byte array with less than 0 bytes.");
     }
 
+    @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
+        if(start > size) throw new StorageSystemException("Too large, start > size");
+        grow_to_at_least(start + part.length);
+        System.arraycopy(part, 0, content, (int) start, part.length);
+        size = (int) Math.max(start+part.length, contentSize());
+        return this;
+    }
 
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         return new ByteArrayInputStream(sub(start, end));
     }
 
-    @Override public InputStream read_stream() {
+    @Override public InputStream stream() {
         return new ByteArrayInputStream(content);
     }
 

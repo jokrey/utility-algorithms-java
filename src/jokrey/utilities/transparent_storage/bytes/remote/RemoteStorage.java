@@ -111,6 +111,43 @@ public class RemoteStorage implements TransparentBytesStorage {
         }
     }
 
+    @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
+        try {
+            synchronized (client) {
+                client.send_cause(RemoteStorageMCNPCauses.SET);
+                client.send_int64(start);
+                client.send_variable(part);
+                client.flush();
+                if (client.receive_byte() == RemoteStorageMCNPCauses.NO_ERROR) //supposed to indicate that no error occurred
+                    return this;
+                else
+                    throw new StorageSystemException("Server said that setting failed.");
+            }
+        } catch (IOException e) {
+            throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
+        }
+    }
+
+
+    @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {
+        try {
+            synchronized (client) {
+                client.send_cause(RemoteStorageMCNPCauses.SET);
+                client.send_int64(start);
+                client.send_variable_from(content_length, content);
+                client.flush();
+//                content.close(); should be done
+                byte result = client.receive_byte();
+                if(result == RemoteStorageMCNPCauses.NO_ERROR) //supposed to indicate that no error occurred
+                    return this;
+                else
+                    throw new StorageSystemException("Server said that append failed.");
+            }
+        } catch (IOException ex) {
+            throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+")");
+        }
+    }
+
 
     @Override public TransparentBytesStorage append(byte[] val) throws StorageSystemException {
         try {
@@ -178,7 +215,7 @@ public class RemoteStorage implements TransparentBytesStorage {
         }
     }
 
-    @Override public InputStream read_stream() {
+    @Override public InputStream stream() {
         return substream(0, contentSize());
     }
 

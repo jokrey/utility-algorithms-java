@@ -125,27 +125,14 @@ public class FileStorage implements TransparentBytesStorage {
     }
 
 
-    @Override public TransparentBytesStorage append(byte[] val) throws StorageSystemException {
-        try {
-            synchronized (raf) {
-                long raf_length = raf.length();
-                raf.seek(raf_length);
-                raf.write(val);
-            }
-        } catch (IOException e) {
-            throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
-        }
-        return this;
-    }
 
-
-    @Override public TransparentBytesStorage append(InputStream content, long content_length) throws StorageSystemException {
+    @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {
         try {
             long expected_bytes_count = content_length;
             synchronized (raf) {
-                long raf_length = raf.length();
-                raf.seek(raf_length);
-                raf.setLength(raf_length + content_length);
+//                long raf_length = raf.length();
+                raf.seek(start);
+                raf.setLength(Math.max(start + content_length, contentSize())); //too ensure at least content_length bytes exist at the correct position now.
                 int nRead;
                 byte[] data = new byte[(int) Math.min(io_buffer_size, content_length)];
                 while (content_length > 0 && (nRead = content.read(data, 0, data.length)) != -1) {
@@ -164,7 +151,24 @@ public class FileStorage implements TransparentBytesStorage {
     }
 
 
-    @Override public byte[] sub(long start, long end) throws StorageSystemException {
+    @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
+        long size = contentSize();
+        if(start > size)
+            throw new StorageSystemException("IndexOutOfBounds, start > size");
+        try {
+            synchronized (raf) {
+                raf.seek(start);
+                raf.write(part);
+            }
+        } catch (IOException ex) {
+            throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+")");
+        }
+        return this;
+    }
+
+    @Override public byte[] sub(long start, long end_given) throws StorageSystemException {
+        long size = contentSize();
+        long end = end_given > size ? size : end_given; //to satisfy interface doc condition
         try {
             long len = end - start;
             if (len > 0) {
@@ -234,7 +238,7 @@ public class FileStorage implements TransparentBytesStorage {
         }
     }
 
-    @Override public InputStream read_stream() {
+    @Override public InputStream stream() {
         try {
             raf.seek(0);
             return new InputStream() {

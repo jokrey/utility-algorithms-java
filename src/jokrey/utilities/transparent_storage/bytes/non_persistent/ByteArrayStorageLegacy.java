@@ -75,15 +75,6 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
     }
 
 
-    @Override public ByteArrayStorageLegacy append(byte[] val) throws StorageSystemException {
-        try {
-            write(val);
-        } catch (Exception e) {
-            throw new StorageSystemException("There was a problem with the provided byte[]("+e.getMessage()+").");
-        }
-        return this;
-    }
-
 
     @Override public TransparentBytesStorage append(InputStream content, long content_length) throws StorageSystemException {
         try {
@@ -97,6 +88,32 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
             if(content_length>0) {
                 while (content_length>0) {
                     write(data, 0, (int) Math.min(data.length, content_length));
+                    content_length -= data.length;
+                }
+                throw new StorageSystemException("The provided stream failed to deliver the promised number of bytes");
+            }
+        } catch (IOException ex) {
+            throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+").");
+        }
+        return this;
+    }
+
+    @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {
+        try {
+            int nRead;
+            byte[] data = new byte[4096];
+            while (content_length>0 && (nRead = content.read(data, 0, data.length)) != -1) {
+                set(start, nRead!=4069?Arrays.copyOfRange(data, 0, nRead):data);
+                start+=nRead;
+                content_length-=nRead;
+//                write(data, 0, (int) Math.min(nRead, content_length));
+            }
+            content.close();
+            if(content_length>0) {
+                while (content_length>0) {
+                    int toWrite = (int) Math.min(data.length, content_length);
+                    set(start, toWrite!=4069?Arrays.copyOfRange(data, 0, toWrite):data);
+                    start+=toWrite;
                     content_length -= data.length;
                 }
                 throw new StorageSystemException("The provided stream failed to deliver the promised number of bytes");
@@ -123,12 +140,24 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
             throw new StorageSystemException("Cannot create a byte array with less than 0 bytes.");
     }
 
+    @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
+        if(start > count) throw new StorageSystemException("Too large, start > count");
+        if(start==count)
+            write(part, 0, part.length);
+        else {
+            while (start + part.length > count)
+                write(0);
+            System.arraycopy(part, 0, buf, (int) start, part.length);
+        }
+        return this;
+    }
+
 
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         return new ByteArrayInputStream(sub(start, end));
     }
 
-    @Override public InputStream read_stream() {
+    @Override public InputStream stream() {
         return new ByteArrayInputStream(buf);
     }
 

@@ -163,12 +163,25 @@ public class RemoteStorageServer implements TransparentBytesStorage {
             case RemoteStorageMCNPCauses.GET_CONTENT_SIZE:
                 handle_get_content_size_by(connection);
                 break;
+            case RemoteStorageMCNPCauses.SET:
+                handle_set_by(connection);
+                break;
         }
     }
     private void handle_set_content_by(MCNP_Connection connection) throws IOException {
         byte[] content = connection.receive_variable();
         try {
             setContent(content);
+            connection.send_byte(RemoteStorageMCNPCauses.NO_ERROR);
+        } catch(StorageSystemException ex) {
+            connection.send_byte(RemoteStorageMCNPCauses.ERROR);
+        }
+    }
+    private void handle_set_by(MCNP_Connection connection) throws IOException {
+        long start = connection.receive_int64();
+        byte[] part = connection.receive_variable();
+        try {
+            set(start, part);
             connection.send_byte(RemoteStorageMCNPCauses.NO_ERROR);
         } catch(StorageSystemException ex) {
             connection.send_byte(RemoteStorageMCNPCauses.ERROR);
@@ -236,7 +249,7 @@ public class RemoteStorageServer implements TransparentBytesStorage {
         return delegation.substream(start, end);
     }
 
-    @Override public InputStream read_stream() {
+    @Override public InputStream stream() {
         return substream(0, contentSize());
     }
 
@@ -261,6 +274,14 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     }
     @Override public synchronized RemoteStorageServer delete(long start, long end) throws StorageSystemException {
         delegation.delete(start, end);
+        return this;
+    }
+    @Override public synchronized TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
+        delegation.set(start, part);
+        return this;
+    }
+    @Override public TransparentBytesStorage set(long start, InputStream part, long part_length) throws StorageSystemException {
+        delegation.set(start, part, part_length);
         return this;
     }
 }

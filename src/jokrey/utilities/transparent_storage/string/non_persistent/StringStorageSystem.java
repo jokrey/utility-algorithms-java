@@ -2,6 +2,7 @@ package jokrey.utilities.transparent_storage.string.non_persistent;
 
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.TransparentStorage;
+import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
 /**
  * Implementation of TransparentStorage wrapping every single call to an internal StringBuilder.
@@ -31,7 +32,7 @@ public class StringStorageSystem implements TransparentStorage<String> {
     }
 
 
-    @Override public TransparentStorage<String> delete(long start, long end) {
+    @Override public StringStorageSystem delete(long start, long end) {
         if(start>Integer.MAX_VALUE || end>Integer.MAX_VALUE)
             throw new StorageSystemException("StringStorageSystem only supports integer sized content");
         content.delete((int) start, (int) end);
@@ -39,7 +40,7 @@ public class StringStorageSystem implements TransparentStorage<String> {
     }
 
 
-    @Override public TransparentStorage<String> append(String val) {
+    @Override public StringStorageSystem append(String val) {
         content.append(val);
         return this;
     }
@@ -49,6 +50,11 @@ public class StringStorageSystem implements TransparentStorage<String> {
         return content.substring((int) start, (int) end);
     }
 
+    @Override public StringStorageSystem set(long start, String part) {
+        content.delete((int)start, (int) (start+part.length()<contentSize()? start+part.length():contentSize()));
+        content.insert((int) start, part);
+        return this;
+    }
 
     @Override public long contentSize() {
         return content.length();
