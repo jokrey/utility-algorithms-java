@@ -44,7 +44,7 @@ public class GenericTest {
     }
 
 
-    public void test(TransparentBytesStorage storage) {
+    public static void test(TransparentBytesStorage storage) {
         storage.clear();
         assertEquals(0, storage.contentSize());
         assertArrayEquals(new byte[0], storage.getContent());

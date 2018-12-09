@@ -85,7 +85,7 @@ public class GenericPerformanceTest {
     protected static void run_standard_test_many(String description, WriteResults writeResults, TagBasedEncoder<byte[]> tbe) {
         TimeDiffMarker.println_setMark_d(description);
 
-        AverageCallTimeMarker.Call_Count_Average[] many_res = GenericPerformanceTest.test_print_all(tbe, 10000, 1, small_value);
+        AverageCallTimeMarker.Call_Count_Average[] many_res = GenericPerformanceTest.test_print_all(tbe, 10000, 1, new byte[1]);
 
         AverageCallTimeMarker.Call_Count_Average[] combined_res = AverageCallTimeMarker.combine_all(many_res);
         AverageCallTimeMarker.print_all(combined_res, "Intermediate results(short run) for: "+tbe.getClass());

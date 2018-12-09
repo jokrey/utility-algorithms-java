@@ -40,6 +40,9 @@ public class Simple1FileSystemEditor {
             working_directory.append(path);
             working_directory.append("/");
             working_directory.append(args[0].getRaw());
+            System.out.println("New Working Directory: "+working_directory.toString());
+            if(!system.isDirectory(working_directory.toString()))
+                System.out.println("New working-directory is not currently an existing directory");
         });
         loop.addCommand("ls", "lists all files in the working directory", Argument.noargs(), args -> {
             String[] virtualPaths = system.getVirtualPathsInVirtualDir(working_directory.toString());
@@ -47,7 +50,15 @@ public class Simple1FileSystemEditor {
                 System.out.println(virtualPath);
         });
 
+        loop.addCommand("create", "creates a new file with name(args[0]) and no content", Argument.with(String.class), args -> {
+            system.setFileContent(system.getInnerPath(working_directory+args[0].getRaw()), new byte[0]);
+        }, "create-file", "createFile");
 
+        loop.addCommand("delete", "deletes the file with name(args[0])", Argument.with(String.class), args -> {
+            system.delete(system.getInnerPath(working_directory+args[0].getRaw()));
+        });
+
+        //TODO, more commands
 
         loop.run();
     }

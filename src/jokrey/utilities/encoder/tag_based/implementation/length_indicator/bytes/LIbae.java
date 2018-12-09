@@ -28,6 +28,8 @@ import java.util.Arrays;
  * LI-Encoding
  * Length-Indicator based byte array encoding
  *
+ * TODO:: switch to unsigned
+ *
  * @author jokrey
  */
 public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
@@ -157,12 +159,20 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
         return getLengthIndicatorFor(arr.length);
     }
     private static byte[] getLengthIndicatorFor(long length) {
-        byte[] li_bytes = getMinimalByteArrayFromInt(length); //cannot be more than 8 in size.
-        byte leading_li = (byte) li_bytes.length; //cast possible because it cannot be more than 8 anyways.
-        byte[] li_bytes_with_leading_li = new byte[li_bytes.length+1];
-        li_bytes_with_leading_li[0] = leading_li;
-        System.arraycopy(li_bytes, 0, li_bytes_with_leading_li, 1, li_bytes.length);
-        return li_bytes_with_leading_li;
+        int byte_count = (int) Math.max(0, Math.ceil(Math.floor((Math.log(length)/Math.log(2)) + 1) / 8));
+        byte[] bytes = new byte[byte_count + 1];
+        bytes[0] = (byte) byte_count;//cast possible because it cannot be more than 8 anyways.
+        for(int n=1;n<bytes.length;n++)
+            bytes[n] = BitHelper.getByte(length, (bytes.length-1)-n);
+        return bytes;
+
+        //one more array allocation, more declarative:
+//        byte[] li_bytes = getMinimalByteArrayFromInt(length); //cannot be more than 8 in size.
+//        byte leading_li = (byte) li_bytes.length; //cast possible because it cannot be more than 8 anyways.
+//        byte[] li_bytes_with_leading_li = new byte[li_bytes.length+1];
+//        li_bytes_with_leading_li[0] = leading_li;
+//        System.arraycopy(li_bytes, 0, li_bytes_with_leading_li, 1, li_bytes.length);
+//        return li_bytes_with_leading_li;
     }
 
 
@@ -195,7 +205,7 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
 
 
     //SECONDARY LIBAE FUNCTIONALITY
-    private static long getIntFromByteArray(byte[] bytearr, int defaultVal) {
+    protected static long getIntFromByteArray(byte[] bytearr, int defaultVal) {
         try {
             if(bytearr.length == 8) {
                 return ByteBuffer.wrap(bytearr).getLong();// big-endian by default
@@ -212,13 +222,5 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
             ex.printStackTrace();
             return defaultVal;
         }
-    }
-    private static byte[] getMinimalByteArrayFromInt(long length) {
-        int byte_count = (int) Math.max(0, Math.ceil(Math.floor((Math.log(length)/Math.log(2)) + 1) / 8));
-
-        byte[] bytes = new byte[byte_count];
-        for(int n=0;n<bytes.length;n++)
-            bytes[n] = BitHelper.getByte(length, (bytes.length-1)-n);
-        return bytes;
     }
 }

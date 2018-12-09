@@ -76,6 +76,16 @@ public class LITagBytesEncoder extends LITagEncoder<byte[]> implements TagBasedE
         super(new LIbae(contentBuilder));
     }
 
+    /**
+     * Constructor.
+     * Uses the given LIbae as the internal M:1 encoder
+     *
+     * @param aLIbae a LIbae implementation to work with
+     */
+    public LITagBytesEncoder(LIbae aLIbae) {
+        super(aLIbae);
+    }
+
 
 
     @Override public TransparentBytesStorage getRawStorageSystem() {

@@ -64,6 +64,13 @@ public class PerformanceTests {
     }
 
     @Test
+    public void litbe_ramStoragePRINTONLY() {
+        GenericPerformanceTest.run_standard_test_many("LITagBytesEncoder | RAM storage", (introduction_text, results) -> {
+            AverageCallTimeMarker.print_all(results, introduction_text);
+        }, new LITagBytesEncoder());
+    }
+
+    @Test
     public void litbe_ramStorage_threadsafeWrapper() {
         GenericPerformanceTest.run_standard_test("SynchronizedTagBasedEncoder | RAM storage", PerformanceTests::writeResults, new SynchronizingTagBasedEncoder<>(new LITagBytesEncoder()));
     }
@@ -89,6 +96,16 @@ public class PerformanceTests {
         File f = new File(System.getProperty("user.home")+"/Desktop/litbe_file_storage_perf_test.litbe");
         try(FileStorage storage = new FileStorage(f)) {
             GenericPerformanceTest.run_standard_test_short("LITagBytesEncoder | FILE storage", PerformanceTests::writeResults, new LITagBytesEncoder(storage));
+        }
+    }
+
+    @Test
+    public void x3_litbe_fileStorage_fastDrivePRINTONLY() throws IOException {
+        File f = new File(System.getProperty("user.home")+"/Desktop/litbe_file_storage_perf_test.litbe");
+        try(FileStorage storage = new FileStorage(f)) {
+            GenericPerformanceTest.run_standard_test_short("LITagBytesEncoder | FILE storage", (introduction_text, results) -> {
+                AverageCallTimeMarker.print_all(results, introduction_text);
+            }, new LITagBytesEncoder(storage));
         }
     }
 

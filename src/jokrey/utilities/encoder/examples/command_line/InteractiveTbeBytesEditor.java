@@ -1,7 +1,6 @@
 package jokrey.utilities.encoder.examples.command_line;
 
 import jokrey.utilities.command.line.helper.Argument;
-import jokrey.utilities.command.line.helper.ConstrainedCommand;
 import jokrey.utilities.command.line.helper.CommandLoop;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
 import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
@@ -78,7 +77,7 @@ public class InteractiveTbeBytesEditor {
                         Argument.with(String.class), args -> {
                     try {
                         FileOutputStream fout = new FileOutputStream(new File(args[0].raw()));
-                        InputStream is = tbe.getRawStorageSystem().read_stream();
+                        InputStream is = tbe.getRawStorageSystem().stream();
                         byte[] buffer = new byte[4096];
                         int read;
                         while((read = is.read(buffer)) != -1) {

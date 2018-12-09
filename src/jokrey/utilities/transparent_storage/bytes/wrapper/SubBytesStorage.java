@@ -50,7 +50,7 @@ public class SubBytesStorage implements TransparentBytesStorage {
     }
 
     @Override public InputStream stream() {
-        return delegate.substream(start, end);
+        return delegate.substream(start, Math.min(end, delegate.contentSize()));
     }
 
     @Override public byte[] sub(long start, long end) {
@@ -60,8 +60,7 @@ public class SubBytesStorage implements TransparentBytesStorage {
     }
 
     @Override public long contentSize() {
-        long delegate_size = delegate.contentSize();
-        return delegate_size < end?delegate_size-start:end-start;
+        return Math.min(end, delegate.contentSize()) - start;
     }
 
     @Override public void setContent(byte[] content) {
@@ -69,7 +68,7 @@ public class SubBytesStorage implements TransparentBytesStorage {
     }
 
     @Override public byte[] getContent() {
-        return delegate.sub(start, end);
+        return delegate.sub(start, Math.min(end, delegate.contentSize()));
     }
 
 
