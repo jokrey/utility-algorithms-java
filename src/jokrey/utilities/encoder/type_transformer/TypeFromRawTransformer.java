@@ -1,8 +1,8 @@
 package jokrey.utilities.encoder.type_transformer;
 
-import jokrey.utilities.encoder.tag_based.Encodable;
-import jokrey.utilities.encoder.tag_based.EncodableAsBytes;
-import jokrey.utilities.encoder.tag_based.EncodableAsString;
+import jokrey.utilities.encoder.Encodable;
+import jokrey.utilities.encoder.EncodableAsBytes;
+import jokrey.utilities.encoder.EncodableAsString;
 
 import java.util.Arrays;
 import java.util.List;

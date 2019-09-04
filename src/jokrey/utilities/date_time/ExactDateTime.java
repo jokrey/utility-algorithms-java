@@ -1,11 +1,11 @@
 package jokrey.utilities.date_time;
 
-import jokrey.utilities.encoder.tag_based.EncodableAsBytes;
-import jokrey.utilities.encoder.tag_based.EncodableAsString;
+import jokrey.utilities.encoder.EncodableAsBytes;
+import jokrey.utilities.encoder.EncodableAsString;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LITagStringEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LIseLegacy_Fixed;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.string.LITagStringEncoder;
+import jokrey.utilities.encoder.as_union.li.string.LIseLegacy_Fixed;
 
 import java.io.Serializable;
 

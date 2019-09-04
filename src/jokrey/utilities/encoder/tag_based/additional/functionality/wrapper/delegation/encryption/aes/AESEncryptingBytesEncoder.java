@@ -1,7 +1,7 @@
 package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.encryption.aes;
 
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
-import jokrey.utilities.encoder.tag_based.helper.AESHelper;
+import jokrey.utilities.encoder.helper.AESHelper;
 
 /**
  * Uses AES with CBC to encrypt content and tag of a provided other TagBasedEncoderBytes,

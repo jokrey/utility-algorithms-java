@@ -140,18 +140,21 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
             throw new StorageSystemException("Cannot create a byte array with less than 0 bytes.");
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
         if(start > count) throw new StorageSystemException("Too large, start > count");
         if(start==count)
-            write(part, 0, part.length);
+            write(part, off, off_end);
         else {
             while (start + part.length > count)
                 write(0);
-            System.arraycopy(part, 0, buf, (int) start, part.length);
+            System.arraycopy(part, off, buf, (int) start, off_end-off);
         }
         return this;
     }
 
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
+        return set(start, part, 0, part.length);
+    }
 
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         return new ByteArrayInputStream(sub(start, end));

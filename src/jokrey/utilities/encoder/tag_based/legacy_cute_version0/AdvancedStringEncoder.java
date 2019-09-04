@@ -1,6 +1,6 @@
 package jokrey.utilities.encoder.tag_based.legacy_cute_version0;
 
-import jokrey.utilities.encoder.tag_based.EncodableAsString;
+import jokrey.utilities.encoder.EncodableAsString;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

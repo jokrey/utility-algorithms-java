@@ -14,9 +14,9 @@ public class TbePerformanceMonitor<SF> implements TagBasedEncoder<SF> {
     }
 
     @Override public boolean exists(String tag) {
-        AverageCallTimeMarker.mark_call_start("exists_in_cache");
+        AverageCallTimeMarker.mark_call_start("exists");
         boolean result = monitoring_subject.exists(tag);
-        AverageCallTimeMarker.mark_call_end("exists_in_cache");
+        AverageCallTimeMarker.mark_call_end("exists");
         return result;
     }
 

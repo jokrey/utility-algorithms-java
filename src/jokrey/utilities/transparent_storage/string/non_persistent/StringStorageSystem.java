@@ -2,7 +2,6 @@ package jokrey.utilities.transparent_storage.string.non_persistent;
 
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.TransparentStorage;
-import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
 /**
  * Implementation of TransparentStorage wrapping every single call to an internal StringBuilder.
@@ -50,10 +49,17 @@ public class StringStorageSystem implements TransparentStorage<String> {
         return content.substring((int) start, (int) end);
     }
 
-    @Override public StringStorageSystem set(long start, String part) {
+    @Override public StringStorageSystem set(long start, String part, int off, int off_end) {
         content.delete((int)start, (int) (start+part.length()<contentSize()? start+part.length():contentSize()));
-        content.insert((int) start, part);
+        content.insert((int) start, part, off, off_end);
         return this;
+    }
+
+    @Override public StringStorageSystem set(long start, String part, int off) {
+        return set(start, part, off, part.length());
+    }
+    @Override public StringStorageSystem set(long start, String part) {
+        return set(start, part, 0);
     }
 
     @Override public long contentSize() {

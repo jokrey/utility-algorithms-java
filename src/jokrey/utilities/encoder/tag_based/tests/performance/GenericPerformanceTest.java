@@ -24,7 +24,7 @@ public class GenericPerformanceTest {
     }
 
     public interface WriteResults {
-        void write(String introduction_text, AverageCallTimeMarker.Call_Count_Average[] results);
+        void write(String introduction_text, AverageCallTimeMarker.Call_Count_Average_Min_Max[] results);
     }
 
     //standard combined tests - combines high count
@@ -34,11 +34,11 @@ public class GenericPerformanceTest {
     protected static void run_standard_test(String description, WriteResults writeResults, TagBasedEncoder<byte[]> tbe) {
         if(description!=null)TimeDiffMarker.println_setMark_d(description);
 
-        AverageCallTimeMarker.Call_Count_Average[] many_small_res = GenericPerformanceTest.test_print_all(tbe, 1000, 10, small_value);
-        AverageCallTimeMarker.Call_Count_Average[] few_small_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, small_value);
-        AverageCallTimeMarker.Call_Count_Average[] few_big_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, mid_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] many_small_res = GenericPerformanceTest.test_print_all(tbe, 1000, 10, small_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] few_small_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, small_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] few_big_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, mid_value);
 
-        AverageCallTimeMarker.Call_Count_Average[] combined_res = AverageCallTimeMarker.combine_all(many_small_res, few_small_res, few_big_res);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_res = AverageCallTimeMarker.combine_all(many_small_res, few_small_res, few_big_res);
         AverageCallTimeMarker.print_all(combined_res, "Intermediate results(long run) for: "+tbe.getClass());
 
         if(description!=null) writeResults.write("FULL RUN\n"+description + "     total time taken ("+TimeDiffMarker.getDiffFor_as_string_d()+")", combined_res);
@@ -47,11 +47,11 @@ public class GenericPerformanceTest {
     protected static void run_standard_test_string(String description, WriteResults writeResults, TagBasedEncoder<String> tbe) {
         TimeDiffMarker.println_setMark_d(description);
 
-        AverageCallTimeMarker.Call_Count_Average[] many_small_res = GenericPerformanceTest.test_print_all(tbe, 1000, 10, new String(small_value, StandardCharsets.UTF_8));
-        AverageCallTimeMarker.Call_Count_Average[] few_small_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, new String(small_value, StandardCharsets.UTF_8));
-        AverageCallTimeMarker.Call_Count_Average[] few_big_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, new String(mid_value, StandardCharsets.UTF_8));
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] many_small_res = GenericPerformanceTest.test_print_all(tbe, 1000, 10, new String(small_value, StandardCharsets.UTF_8));
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] few_small_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, new String(small_value, StandardCharsets.UTF_8));
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] few_big_res = GenericPerformanceTest.test_print_all(tbe, 100, 30, new String(mid_value, StandardCharsets.UTF_8));
 
-        AverageCallTimeMarker.Call_Count_Average[] combined_res = AverageCallTimeMarker.combine_all(many_small_res, few_small_res, few_big_res);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_res = AverageCallTimeMarker.combine_all(many_small_res, few_small_res, few_big_res);
         AverageCallTimeMarker.print_all(combined_res, "Intermediate results(string run) for: "+tbe.getClass());
 
         writeResults.write("FULL RUN\n"+description + "     total time taken ("+TimeDiffMarker.getDiffFor_as_string_d()+")", combined_res);
@@ -60,11 +60,11 @@ public class GenericPerformanceTest {
     protected static void run_standard_test_short(String description, WriteResults writeResults, TagBasedEncoder<byte[]> tbe) {
         TimeDiffMarker.println_setMark_d(description);
 
-        AverageCallTimeMarker.Call_Count_Average[] many_small_res = GenericPerformanceTest.test_print_all(tbe, 250, 1, small_value);
-        AverageCallTimeMarker.Call_Count_Average[] few_small_res = GenericPerformanceTest.test_print_all(tbe, 10, 3, small_value);
-        AverageCallTimeMarker.Call_Count_Average[] few_big_res = GenericPerformanceTest.test_print_all(tbe, 10, 3, mid_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] many_small_res = GenericPerformanceTest.test_print_all(tbe, 250, 1, small_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] few_small_res = GenericPerformanceTest.test_print_all(tbe, 10, 3, small_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] few_big_res = GenericPerformanceTest.test_print_all(tbe, 10, 3, mid_value);
 
-        AverageCallTimeMarker.Call_Count_Average[] combined_res = AverageCallTimeMarker.combine_all(many_small_res, few_small_res, few_big_res);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_res = AverageCallTimeMarker.combine_all(many_small_res, few_small_res, few_big_res);
         AverageCallTimeMarker.print_all(combined_res, "Intermediate results(short run) for: "+tbe.getClass());
 
         writeResults.write("SHORTENED RUN\n"+description + "     total time taken ("+TimeDiffMarker.getDiffFor_as_string_d()+")", combined_res);
@@ -73,10 +73,10 @@ public class GenericPerformanceTest {
     protected static void run_standard_test_big(String description, WriteResults writeResults, TagBasedEncoder<byte[]> tbe) {
         TimeDiffMarker.println_setMark_d(description);
 
-        AverageCallTimeMarker.Call_Count_Average[] mid_res = GenericPerformanceTest.test_print_all(tbe, 100, 1, mid_value);
-        AverageCallTimeMarker.Call_Count_Average[] big_res = GenericPerformanceTest.test_print_all(tbe, 10, 1, big_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] mid_res = GenericPerformanceTest.test_print_all(tbe, 100, 1, mid_value);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] big_res = GenericPerformanceTest.test_print_all(tbe, 10, 1, big_value);
 
-        AverageCallTimeMarker.Call_Count_Average[] combined_res = AverageCallTimeMarker.combine_all(mid_res, big_res);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_res = AverageCallTimeMarker.combine_all(mid_res, big_res);
         AverageCallTimeMarker.print_all(combined_res, "Intermediate results(short run) for: "+tbe.getClass());
 
         writeResults.write("BIG RUN\n"+description + "     total time taken ("+TimeDiffMarker.getDiffFor_as_string_d()+")", combined_res);
@@ -85,9 +85,9 @@ public class GenericPerformanceTest {
     protected static void run_standard_test_many(String description, WriteResults writeResults, TagBasedEncoder<byte[]> tbe) {
         TimeDiffMarker.println_setMark_d(description);
 
-        AverageCallTimeMarker.Call_Count_Average[] many_res = GenericPerformanceTest.test_print_all(tbe, 10000, 1, new byte[1]);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] many_res = GenericPerformanceTest.test_print_all(tbe, 10000, 1, new byte[1]);
 
-        AverageCallTimeMarker.Call_Count_Average[] combined_res = AverageCallTimeMarker.combine_all(many_res);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_res = AverageCallTimeMarker.combine_all(many_res);
         AverageCallTimeMarker.print_all(combined_res, "Intermediate results(short run) for: "+tbe.getClass());
 
         writeResults.write("MANY RUN\n"+description + "     total time taken ("+TimeDiffMarker.getDiffFor_as_string_d()+")", combined_res);
@@ -101,7 +101,7 @@ public class GenericPerformanceTest {
      * Only the final results are REALLY relevant.
      * Especially how long a test part took may be weird. This is due to the fact that apart from the actual test, we require some overhead (that overhead may be significantly longer that the test itself).
      */
-    protected static AverageCallTimeMarker.Call_Count_Average[] test_print_all_default(TagBasedEncoder<byte[]> tbe) {
+    protected static AverageCallTimeMarker.Call_Count_Average_Min_Max[] test_print_all_default(TagBasedEncoder<byte[]> tbe) {
         byte[] value = generate_utf8_conform_byte_array(1000);
         return test_print_all(tbe, 1000, 101, value);
     }
@@ -113,7 +113,7 @@ public class GenericPerformanceTest {
      * Only the final results are REALLY relevant.
      * Especially how long a test part took may be weird. This is due to the fact that apart from the actual test, we require some overhead (that overhead may be significantly longer that the test itself).
      */
-    protected static<SF> AverageCallTimeMarker.Call_Count_Average[] test_print_all(TagBasedEncoder<SF> tbe, int count, int iterations, SF value) {
+    protected static<SF> AverageCallTimeMarker.Call_Count_Average_Min_Max[] test_print_all(TagBasedEncoder<SF> tbe, int count, int iterations, SF value) {
         String value_print = value.getClass().isArray() ?
                                             value.getClass().getName()+"["+Array.getLength(value)+"]" :
                                             value instanceof String ?
@@ -121,12 +121,12 @@ public class GenericPerformanceTest {
         String description_print = tbe.getClass()+" - tag-count: "+count+" - repeat-iterations: "+iterations+" - value: \""+value_print+"\"";
 
         tbe.clear();
-        AverageCallTimeMarker.Call_Count_Average[] add_res = add_test_perf(tbe, count, iterations, value, false);
-        AverageCallTimeMarker.Call_Count_Average[] search_res = search_test_perf(tbe, count, iterations, value, false);
-        AverageCallTimeMarker.Call_Count_Average[] delete_res = delete_test_perf(tbe, count, iterations, value, false);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] add_res = add_test_perf(tbe, count, iterations, value, false);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] search_res = search_test_perf(tbe, count, iterations, value, false);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] delete_res = delete_test_perf(tbe, count, iterations, value, false);
         tbe.clear();
 
-        AverageCallTimeMarker.Call_Count_Average[] combined_results = AverageCallTimeMarker.combine_all(add_res, search_res, delete_res);
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_results = AverageCallTimeMarker.combine_all(add_res, search_res, delete_res);
 
         AverageCallTimeMarker.print_all(combined_results, description_print);
 
@@ -152,7 +152,7 @@ public class GenericPerformanceTest {
      * @param <SF> not to worry
      * @return results
      */
-    protected static<SF> AverageCallTimeMarker.Call_Count_Average[] add_test_perf(TagBasedEncoder<SF> tbe, int count, int iterations, SF value, boolean from_scratch) {
+    protected static<SF> AverageCallTimeMarker.Call_Count_Average_Min_Max[] add_test_perf(TagBasedEncoder<SF> tbe, int count, int iterations, SF value, boolean from_scratch) {
         TbePerformanceMonitor<SF> monitor = new TbePerformanceMonitor<>(tbe);
         
         if(from_scratch)
@@ -183,7 +183,7 @@ public class GenericPerformanceTest {
      * @param <SF> not to worry
      * @return results
      */
-    protected static<SF> AverageCallTimeMarker.Call_Count_Average[] search_test_perf(TagBasedEncoder<SF> tbe, int count, int iterations, SF value, boolean from_scratch) {
+    protected static<SF> AverageCallTimeMarker.Call_Count_Average_Min_Max[] search_test_perf(TagBasedEncoder<SF> tbe, int count, int iterations, SF value, boolean from_scratch) {
         TbePerformanceMonitor<SF> monitor = new TbePerformanceMonitor<>(tbe);
 
         if(from_scratch) {
@@ -220,7 +220,7 @@ public class GenericPerformanceTest {
      * @param <SF> not to worry
      * @return results
      */
-    protected static<SF> AverageCallTimeMarker.Call_Count_Average[] delete_test_perf(TagBasedEncoder<SF> tbe, int count, int iterations, SF value, boolean from_scratch) {
+    protected static<SF> AverageCallTimeMarker.Call_Count_Average_Min_Max[] delete_test_perf(TagBasedEncoder<SF> tbe, int count, int iterations, SF value, boolean from_scratch) {
         TbePerformanceMonitor<SF> monitor = new TbePerformanceMonitor<>(tbe);
 
         if(from_scratch) {

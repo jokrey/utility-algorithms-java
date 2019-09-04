@@ -3,7 +3,7 @@ package jokrey.utilities.command.line.helper;
 import jokrey.utilities.encoder.type_transformer.NotTransformableException;
 import jokrey.utilities.encoder.type_transformer.string.TypeToStringTransformer;
 
-import static jokrey.utilities.encoder.tag_based.helper.ReflectionHelper.getWrap;
+import static jokrey.utilities.encoder.helper.ReflectionHelper.getWrap;
 
 public class Argument {
     private static final TypeToStringTransformer trans = new TypeToStringTransformer();

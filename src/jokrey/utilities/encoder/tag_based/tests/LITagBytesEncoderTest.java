@@ -4,8 +4,8 @@ import jokrey.utilities.simple.data_structure.ExtendedIterator;
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.debug_analysis_helper.TimeDiffMarker;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LIbae;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.encoder.examples.LITBE_DirectoryEncoder;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
@@ -196,10 +196,10 @@ public class LITagBytesEncoderTest {
                             43, 42, 2, 44, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 76, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 56, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101,
                             23, 42, 3, 44, 5, 6, 65, 101, 5, 6, 117, 101, 5, 6, 98, 101, 5, 6, 117, 101, 23, 42, 3, 44, 5, 6, 98, 101, 5, 6, 117, 101, 5, 6, 90, 123, 5, 6, 43, 101, 5, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 6, 5, 6, 117, 101, 5, 6, 117, 101,
                             43, 42, 2, 44, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 76, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 56, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101};
-            libae_enc.li_encode(origbig);
-            libae_enc.li_encode(orig);
-            libae_enc.li_encode(orig2, orig, origbig, orig2, orig);
-            libae_enc.li_encode(shortone);
+            libae_enc.encode(origbig);
+            libae_enc.encode(orig);
+            libae_enc.encode(orig2, orig, origbig, orig2, orig);
+            libae_enc.encode(shortone);
 
 
             fcb_for_enc.close();
@@ -243,8 +243,8 @@ public class LITagBytesEncoderTest {
                 {91, 111, 3, 44, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 91, 42, 3, 44, 5, 6, 78, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 1, 42, 3, 44, 5, 6, 76, 101, 5, 6, 12, 101, 5, 6, 123, 111, 5, 6, 117, 101,
                         23, 42, 3, 44, 5, 6, 65, 101, 5, 6, 117, 101, 5, 6, 98, 101, 5, 6, 117, 101, 23, 42, 3, 44, 5, 6, 98, 101, 5, 6, 117, 101, 5, 6, 90, 123, 5, 6, 43, 101, 5, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 6, 5, 6, 117, 101, 5, 6, 117, 101,
                         43, 42, 2, 44, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 76, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101, 56, 42, 3, 44, 5, 6, 45, 101, 5, 6, 117, 101, 5, 6, 117, 101, 5, 6, 117, 101};
-        libae_enc.li_encode(orig);
-        libae_enc.li_encode(orig2, orig, origbig, orig2, orig);
+        libae_enc.encode(orig);
+        libae_enc.encode(orig2, orig, origbig, orig2, orig);
         byte[] encoded = libae_enc.getEncodedBytes();
         System.out.println(Arrays.toString(encoded));
 

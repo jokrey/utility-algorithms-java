@@ -8,8 +8,8 @@ import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.deleg
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteEncoderServer;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteEncoder_Observer;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteUpdateListener;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer_MultiFile;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer_MultiFile;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 import jokrey.utilities.network.mcnp.io.MCNP_ClientIO;

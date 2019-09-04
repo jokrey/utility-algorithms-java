@@ -2,8 +2,8 @@ package jokrey.utilities.encoder.tag_based.tests;
 
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LIbae;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LIse;
+import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
+import jokrey.utilities.encoder.as_union.li.string.LIse;
 import jokrey.utilities.encoder.tag_based.tuple_tag.TupleTagBasedEncoder;
 
 import java.io.ByteArrayInputStream;

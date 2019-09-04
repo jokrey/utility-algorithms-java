@@ -1,6 +1,6 @@
 package jokrey.utilities.network.mcnp.io;
 
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
 import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
 import jokrey.utilities.network.mcnp.MCNP_Connection;
 

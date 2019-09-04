@@ -1,8 +1,10 @@
 package jokrey.utilities.encoder.tag_based;
 
+import jokrey.utilities.encoder.Encodable;
+import jokrey.utilities.encoder.EncodableAsBytes;
+import jokrey.utilities.encoder.EncodableAsString;
 import jokrey.utilities.transparent_storage.TransparentStorage;
 import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
-import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
 
 import java.util.Arrays;
 import java.util.Iterator;

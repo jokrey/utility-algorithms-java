@@ -25,6 +25,9 @@ public abstract class TypeToBytesTransformer implements TypeToFromRawTransformer
         for(Class<?> assignable_c:SHOULD_SUPPORT_ASSIGNABLE)
             if(assignable_c.isAssignableFrom(c))
                 return true;
+        if(c.isArray() && Object[].class.isAssignableFrom(c)) {
+            return canTransform(c.getComponentType());
+        }
         return SHOULD_SUPPORT_TYPES.contains(c);
     }
     @Override public boolean canDetransform(Class<?> c) {

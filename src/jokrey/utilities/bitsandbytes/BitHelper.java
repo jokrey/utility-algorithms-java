@@ -248,25 +248,37 @@ public class BitHelper {
         return bytes;
     }
     /** With exactly number. @see #getBytes(long) */
-    public static byte[]  getInNBytes(long x, int number) {
-        byte[] minimal_bytes = getMinimalBytes(x);
-        if(number == minimal_bytes.length)
-            return minimal_bytes;
-        else if(number > minimal_bytes.length) {
-            byte[] bytes = new byte[number];
-            System.arraycopy(minimal_bytes, 0, bytes, number-minimal_bytes.length, minimal_bytes.length);
-            return bytes;
-        } else { // number < minimal_bytes.length
-            byte[] bytes = new byte[number];
-            System.arraycopy(minimal_bytes, 0, bytes, 0, number);
-            return bytes;
-        }
+    public static byte[] getInNBytes(long x, int number) {
+        byte[] bytes = new byte[number];
+        writeInNBytes(bytes, 0, x, number);
+        return bytes;
+//        byte[] minimal_bytes = getMinimalBytes(x);
+//        if(number == minimal_bytes.length)
+//            return minimal_bytes;
+//        else if(number > minimal_bytes.length) {
+//            byte[] bytes = new byte[number];
+//            System.arraycopy(minimal_bytes, 0, bytes, number-minimal_bytes.length, minimal_bytes.length);
+//            return bytes;
+//        } else { // number < minimal_bytes.length
+//            byte[] bytes = new byte[number];
+//            System.arraycopy(minimal_bytes, 0, bytes, 0, number);
+//            return bytes;
+//        }
     }
 
+    public static void writeInNBytes(byte[] bytes, int offset, long value, int number) {
+        for(int n=0;n<number;n++)
+            bytes[offset + n] = BitHelper.getByte(value, (number-1)-n);
+    }
+
+
     /** ld */
-	public static double log2(double x) {
-		return Math.log(x)/Math.log(2);
-	}
+    public static double log2(double x) {
+        return Math.log(x)/Math.log(2);
+    }
+    public static double ld(double x) {
+        return Math.log(x)/Math.log(2);
+    }
 
 	/**
 	 * Wir verschieben unsere bits bis n ans Ende und unsere bits ab n an den Anfang.
@@ -346,10 +358,49 @@ public class BitHelper {
      * @param bytes a byte array exactly length 4
      * @return an int
      */
-	public static int getInt32From(byte[] bytes) {
-		if(bytes.length==4) {
-			return ByteBuffer.wrap(bytes).getInt();// big-endian by default
+    public static int getInt32From(byte[] bytes) {
+        if(bytes.length==4) {
+			return getInt32From(bytes, 0);
 		}throw new IllegalArgumentException("read error, n!=4");
+    }
+    /** BigEndian */
+    public static int getInt32From(byte[] bytes, int off) {
+        return  ((bytes[off  ]       ) << 24) |
+                ((bytes[off+1] & 0xff) << 16) |
+                ((bytes[off+2] & 0xff) <<  8) |
+                ((bytes[off+3] & 0xff)      );
+    }
+
+    public static long getIntFromNBytes(byte[] bytes, int offset, int len) {
+        long l = 0;
+        for(int i=0;i<len;i++) {
+            if(i==0)
+                l |= (bytes[offset + i]) << (len - i - 1) * 8;
+            else
+                l |= (bytes[offset + i] & 0xff) << (len - i - 1) * 8;
+        }
+        return l;
+//        return  ((bytes[off  ]       ) << 24) |
+//                ((bytes[off+1] & 0xff) << 16) |
+//                ((bytes[off+2] & 0xff) <<  8) |
+//                ((bytes[off+3] & 0xff)      );
+    }
+
+	public static long getUIntFromNBytes(byte[] b, int offset, int len) {
+		long l = 0;
+		for(int i=0;i<len;i++) {
+			l |= b[offset + i] & 0xFF;
+			if(i+1!=len)
+				l <<= 8;
+		}
+//		l |= b[offset    ] & 0xFF;
+//		l <<= 8;
+//		l |= b[offset + 1] & 0xFF;
+//		l <<= 8;
+//		l |= b[offset + 2] & 0xFF;
+//		l <<= 8;
+//		l |= b[offset + 3] & 0xFF;
+		return l;
 	}
 
     /**
@@ -402,6 +453,11 @@ public class BitHelper {
         }
     }
 
+    public static void writeInt32(byte[] bytes, int offset, int value) {
+        for(int n=0;n<4;n++)
+            bytes[offset + n] = BitHelper.getByte(value, (4-1)-n);
+    }
+
     /** @return bytes in hex format */
     public static String getHexString(byte[] bytes) {
         StringBuilder ashex = new StringBuilder();
@@ -444,4 +500,36 @@ public class BitHelper {
 
 		return os.toByteArray();
 	}
+
+
+
+    public static byte[] getUInt32Bytes(long x) {
+        byte[] bytes = new byte[4];
+        writeUInt32Bytes(bytes, 0, x);
+        return bytes;
+    }
+    public static void writeUInt32Bytes(byte[] b, int off, long x) {
+        if(x > Integer.MAX_VALUE*2L+1 || x < 0)
+            throw new IllegalArgumentException("Provided long("+x+") does not represent an uint32");
+        b[off] = (byte) (x);
+        b[off+1] = (byte) (x >> 8);
+        b[off+2] = (byte) (x >> 16);
+        b[off+3] = (byte) (x >> 24);
+    }
+
+
+    public static long getUInt32(byte[] b) {
+        return getUInt32(b, 0);
+    }
+    public static long getUInt32(byte[] b, int offset) {
+        long l = 0;
+        l |= b[offset    ] & 0xFF;
+        l <<= 8;
+        l |= b[offset + 1] & 0xFF;
+        l <<= 8;
+        l |= b[offset + 2] & 0xFF;
+        l <<= 8;
+        l |= b[offset + 3] & 0xFF;
+        return l;
+    }
 }

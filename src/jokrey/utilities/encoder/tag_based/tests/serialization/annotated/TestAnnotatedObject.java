@@ -1,7 +1,7 @@
 package jokrey.utilities.encoder.tag_based.tests.serialization.annotated;
 
-import jokrey.utilities.encoder.tag_based.EncodableAsBytes;
-import jokrey.utilities.encoder.tag_based.EncodableAsString;
+import jokrey.utilities.encoder.EncodableAsBytes;
+import jokrey.utilities.encoder.EncodableAsString;
 import jokrey.utilities.encoder.tag_based.serialization.field.annotated.Encode;
 import jokrey.utilities.encoder.tag_based.tests.serialization.beanish.TestBeanObject;
 

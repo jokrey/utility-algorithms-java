@@ -1,10 +1,10 @@
 package jokrey.utilities.encoder.tag_based.tests;
 
 import jokrey.utilities.debug_analysis_helper.ConcurrentPoolTester;
+import jokrey.utilities.encoder.as_union.li.LIPosition;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.LIe;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LITagStringEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LIse;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.string.LITagStringEncoder;
+import jokrey.utilities.encoder.as_union.li.string.LIse;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -23,20 +23,20 @@ public class LITagStringEncoderTest {
         String[] to_encode = {"test", "arrstart", "1", "2", "", "0", "10", "1234567890"};
         LIse lise = new LIse();
         int i = 0;
-        lise.li_encode(to_encode[i++]);
-        lise.li_encode(to_encode[i++], to_encode[i++], to_encode[i++]);
+        lise.encode(to_encode[i++]);
+        lise.encode(to_encode[i++], to_encode[i++], to_encode[i++]);
         for(;i<to_encode.length;i++)
-            lise.li_encode(to_encode[i]);
-        assertArrayEquals(to_encode, lise.li_decode_all());
-        LIe.Position pos = lise.reset();
-        assertArrayEquals(new String[] {"test", "arrstart"}, lise.li_decode(pos, 2));
-        assertArrayEquals(new String[] {"1", "2"}, lise.li_decode(pos, 2));
+            lise.encode(to_encode[i]);
+        assertArrayEquals(to_encode, lise.decodeAll());
+        LIPosition pos = lise.reset();
+        assertArrayEquals(new String[] {"test", "arrstart"}, lise.decodeMany(pos, 2));
+        assertArrayEquals(new String[] {"1", "2"}, lise.decodeMany(pos, 2));
         pos = lise.reset();
-        assertArrayEquals(to_encode, lise.li_decode(pos, 500));
-        assertArrayEquals(new String[0], lise.li_decode(pos, 0));
+        assertArrayEquals(to_encode, lise.decodeMany(pos, 500));
+        assertArrayEquals(new String[0], lise.decodeMany(pos, 0));
 
         lise = new LIse("");
-        assertNull(lise.li_decode_first());
+        assertNull(lise.decodeFirst());
     }
 
     @Test
@@ -122,17 +122,17 @@ public class LITagStringEncoderTest {
     @Test
     public void lise_iterator_test() {
         LIse lise = new LIse();
-        LIe.Position pos = lise.reset();
+        LIPosition pos = lise.reset();
         String[] values = {"wersadfa", "23234234", "324ads213f", "§§$!§%&&/&GBFÄBÖ", "324ads213f", "§§$!§%&&/&GBFÄBÖ"};
-        lise.li_encode(values);
+        lise.encode(values);
 
         int count = 0;
         for(String s:lise) {
             assertEquals(values[count], s);
 
             //confusing the algorithm is not simple proof
-            lise.li_decode(pos);
-            lise.li_skip(pos);
+            lise.decode(pos);
+            lise.skip(pos);
 
             //nestability proof
             int inner_counter = 0;
@@ -140,12 +140,12 @@ public class LITagStringEncoderTest {
                 assertEquals(values[inner_counter], s_inner);
                 inner_counter++;
             }
-            assertEquals(inner_counter, lise.li_decode_all().length);
+            assertEquals(inner_counter, lise.decodeAll().length);
 
             count++;
         }
 
-        assertEquals(count, lise.li_decode_all().length);
+        assertEquals(count, lise.decodeAll().length);
     }
 
 
@@ -175,7 +175,7 @@ public class LITagStringEncoderTest {
     private void concurrent_write_to(String tag, String val, LIse lise, boolean exception_expected) throws Throwable {
         Runnable r1_write = () -> {
             try {
-                lise.li_encode(tag, val);
+                lise.encode(tag, val);
             } catch(Exception e) {
                 if(!exception_expected)
                     e.printStackTrace();

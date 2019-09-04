@@ -5,7 +5,7 @@ import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
 
 import java.lang.reflect.Field;
 
-import static jokrey.utilities.encoder.tag_based.helper.ReflectionHelper.getWrap;
+import static jokrey.utilities.encoder.helper.ReflectionHelper.getWrap;
 
 /**
  * Helper class for all serializers using fields.

@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static jokrey.utilities.encoder.tag_based.helper.ReflectionHelper.getWrap;
+import static jokrey.utilities.encoder.helper.ReflectionHelper.getWrap;
 
 /**
  * Allows Bean's or Bean(ish) java objects to be serialized using TagBasedEncoder's.

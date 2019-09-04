@@ -3,7 +3,7 @@ package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.dele
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.helper.AESHelper;
+import jokrey.utilities.encoder.helper.AESHelper;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;

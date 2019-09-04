@@ -2,7 +2,7 @@ package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.dele
 
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;

@@ -2,8 +2,8 @@ package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.dele
 
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.RemoteEncoderMCNPCauses;
-import jokrey.utilities.encoder.tag_based.helper.ConcurrentMultiMap;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.encoder.helper.ConcurrentMultiMap;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.remote.RemoteStorageMCNPCauses;
 import jokrey.utilities.encoder.tag_based.tuple_tag.DelegatingTupleTagBasedEncoderBytes;

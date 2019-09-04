@@ -1,5 +1,6 @@
 package jokrey.utilities.encoder.tag_based;
 
+import jokrey.utilities.encoder.Encodable;
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;

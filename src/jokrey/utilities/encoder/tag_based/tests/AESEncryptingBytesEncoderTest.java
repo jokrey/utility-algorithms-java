@@ -3,7 +3,7 @@ package jokrey.utilities.encoder.tag_based.tests;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.encryption.aes.AESContentEncryptingBytesEncoder;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.encryption.aes.AESEncryptingBytesEncoder;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.encryption.aes.AESTagEncryptingBytesEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
 import org.junit.Test;
 
 import java.util.Arrays;

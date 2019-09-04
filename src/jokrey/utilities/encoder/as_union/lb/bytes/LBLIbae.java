@@ -132,17 +132,19 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
         int dataWritten = 0;
         while (true) {
             int nextBlock;
-            boolean firstBlock = dataWritten == 0;
-            boolean lastBlock = dataWritten + (BLOCK_SIZE-(firstBlock?getFBlockHeaderSize():getMBlockHeaderSize())) >= data.length;
-            if (firstBlock) { //first block
-                if(lastBlock) {
+            boolean isFirstBlock = dataWritten == 0;
+            boolean isLastBlock = dataWritten + (BLOCK_SIZE-(isFirstBlock?getFBlockHeaderSize():getMBlockHeaderSize())) >= data.length;
+            System.out.println("1 - firstBlock="+isFirstBlock+", lastBlock="+isLastBlock+", currentBlock="+currentBlock);
+            debugPrintAllBlocks();
+            if (isFirstBlock) { //first block
+                if(isLastBlock) {
                     writeFBlock(currentBlock, data, previousLastBlockOfLastSequence, 0);
                     break;
                 } else {
                     nextBlock = linearSearchNextEmptyBlockId(currentBlock + 1, blockCount);
                     dataWritten = writeFBlock(currentBlock, data, previousLastBlockOfLastSequence, nextBlock);
                 }
-            } else if(lastBlock) { //last block
+            } else if(isLastBlock) { //last block
                 writeMBlock(currentBlock, data, dataWritten, 0);
                 break;
             } else {
@@ -152,6 +154,8 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
             currentBlock = nextBlock;
             blockCount = Math.max(blockCount, nextBlock);
         }
+        System.out.println("2");
+        debugPrintAllBlocks();
 
         writeLastBlockOfLastSequence(block0, currentBlock);
         if(firstBlockOfFirstSequence == 0) {
@@ -163,6 +167,9 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
         }
 
         storeBlock0(block0);
+
+        System.out.println("3");
+        debugPrintAllBlocks();
         return this;
     }
 
@@ -257,10 +264,12 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
             if(virtualPointer == UNUSED_MARKER)
                 throw new IllegalStateException("Blocks at requested position has been deleted or does not exist, consider calling reset.");
             out.write(block, getFBlockHeaderSize(), blockLength);
-            virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
 
             if(previousLastBlock != 0)
                 setNextPointer(previousLastBlock, virtualPointer); //relink previous block to next block(essentially skipping the deleted block.
+                                                                   //important: virtualPointer is negative here, so that the previous last block is still a 'last' block
+
+            virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
             if(virtualPointer!=0)
                 setPreviousPointer(virtualPointer, previousLastBlock); //relink previousPointer of nextBlock(pointing to this block, to out previous)
             updateBlock0AfterSequenceDeletion(block0, startBlock, startBlock, virtualPointer, previousLastBlock);
@@ -280,10 +289,11 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
             virtualPointer = getNextPointer(block);
             if(virtualPointer <= 0) {
                 out.write(block, getMBlockHeaderSize(), blockLength);
-                virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
-
                 if(previousLastBlock != 0)
                     setNextPointer(previousLastBlock, virtualPointer); //relink previous block to next block(essentially skipping the deleted block.
+                                                                       //important: virtualPointer is negative here, so that the previous last block is still a 'last' block
+
+                virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
                 if(virtualPointer!=0)
                     setPreviousPointer(virtualPointer, previousLastBlock); //relink previousPointer of nextBlock(pointing to this block, to out previous)
                 updateBlock0AfterSequenceDeletion(block0, startBlock, previousVirtualPointer, virtualPointer, previousLastBlock);
@@ -319,10 +329,12 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
             if(virtualPointer == UNUSED_MARKER)
                 throw new IllegalStateException("Blocks at requested position has been deleted or does not exist, consider calling reset.");
             bytesDeleted += blockLength;
-            virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
 
             if(previousLastBlock != 0)
                 setNextPointer(previousLastBlock, virtualPointer); //relink previous block to next block(essentially skipping the deleted block.
+                                                                   // important: virtualPointer is negative here, so that the previous last block is still a 'last' block
+
+            virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
             if(virtualPointer!=0)
                 setPreviousPointer(virtualPointer, previousLastBlock); //relink previousPointer of nextBlock(pointing to this block, to out previous)
             updateBlock0AfterSequenceDeletion(block0, startBlock, startBlock, virtualPointer, previousLastBlock);
@@ -342,10 +354,12 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
             virtualPointer = getNextPointer(block);
             if(virtualPointer <= 0) {
                 bytesDeleted += blockLength;
-                virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
 
                 if(previousLastBlock != 0)
                     setNextPointer(previousLastBlock, virtualPointer); //relink previous block to next block(essentially skipping the deleted block.
+                                                                       // important: virtualPointer is negative here, so that the previous last block is still a 'last' block
+
+                virtualPointer = -virtualPointer; //important, pointer is required to have a valid position after
                 if(virtualPointer!=0)
                     setPreviousPointer(virtualPointer, previousLastBlock); //relink previousPointer of nextBlock(pointing to this block, to out previous)
                 updateBlock0AfterSequenceDeletion(block0, startBlock, previousVirtualPointer, virtualPointer, previousLastBlock);
@@ -411,7 +425,7 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
     @Override public BlockPosition reset() {
         return new BlockPosition(0);
     }
-    @Override public TransparentStorage<byte[]> getRawStorage() {
+    @Override public TransparentBytesStorage getRawStorage() {
         return storage;
     }
 

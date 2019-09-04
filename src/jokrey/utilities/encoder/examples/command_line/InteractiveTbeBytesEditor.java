@@ -3,7 +3,7 @@ package jokrey.utilities.encoder.examples.command_line;
 import jokrey.utilities.command.line.helper.Argument;
 import jokrey.utilities.command.line.helper.CommandLoop;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
 import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
 
 import java.io.*;

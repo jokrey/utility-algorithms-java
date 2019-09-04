@@ -1,7 +1,7 @@
 package jokrey.utilities.encoder.tag_based.tests.serialization.beanish;
 
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LIbae;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LIse;
+import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
+import jokrey.utilities.encoder.as_union.li.string.LIse;
 
 import java.util.Arrays;
 import java.util.Random;

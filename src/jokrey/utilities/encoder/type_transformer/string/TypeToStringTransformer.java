@@ -22,6 +22,9 @@ public class TypeToStringTransformer implements TypeToFromRawTransformer<String>
         for(Class<?> assignable_c:SHOULD_SUPPORT_ASSIGNABLE)
             if(assignable_c.isAssignableFrom(c))
                 return true;
+        if(c.isArray() && Object[].class.isAssignableFrom(c)) {
+            return canTransform(c.getComponentType());
+        }
         return SHOULD_SUPPORT_TYPES.contains(c);
     }
     @Override public boolean canDetransform(Class<?> c) {
@@ -77,7 +80,7 @@ public class TypeToStringTransformer implements TypeToFromRawTransformer<String>
 
     @Override public String transform(short[] entry) throws NotTransformableException {
 //        LIse lise = new LIse();
-//        for(short s:entry) lise.li_encode(transform(s));
+//        for(short s:entry) lise.encode(transform(s));
 //        return lise.getEncodedString();
         Short[] result = new Short[entry.length];
         for(int i=0;i<result.length;i++)
@@ -113,7 +116,7 @@ public class TypeToStringTransformer implements TypeToFromRawTransformer<String>
 
     @Override public String transform(int[] entry) throws NotTransformableException {
 //        LIse lise = new LIse();
-//        for(int s:entry) lise.li_encode(transform(s));
+//        for(int s:entry) lise.encode(transform(s));
 //        return lise.getEncodedString();
         Integer[] result = new Integer[entry.length];
         for(int i=0;i<result.length;i++)
@@ -149,7 +152,7 @@ public class TypeToStringTransformer implements TypeToFromRawTransformer<String>
 
     @Override public String transform(long[] entry) throws NotTransformableException {
 //        LIse lise = new LIse();
-//        for(long s:entry) lise.li_encode(transform(s));
+//        for(long s:entry) lise.encode(transform(s));
 //        return lise.getEncodedString();
         Long[] result = new Long[entry.length];
         for(int i=0;i<result.length;i++)
@@ -185,7 +188,7 @@ public class TypeToStringTransformer implements TypeToFromRawTransformer<String>
 
     @Override public String transform(float[] entry) throws NotTransformableException {
 //        LIse lise = new LIse();
-//        for(float s:entry) lise.li_encode(transform(s));
+//        for(float s:entry) lise.encode(transform(s));
 //        return lise.getEncodedString();
         Float[] result = new Float[entry.length];
         for(int i=0;i<result.length;i++)
@@ -221,7 +224,7 @@ public class TypeToStringTransformer implements TypeToFromRawTransformer<String>
 
     @Override public String transform(double[] entry) throws NotTransformableException {
 //        LIse lise = new LIse();
-//        for(double s:entry) lise.li_encode(transform(s));
+//        for(double s:entry) lise.encode(transform(s));
 //        return lise.getEncodedString();
         Double[] result = new Double[entry.length];
         for(int i=0;i<result.length;i++)

@@ -173,21 +173,35 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         if (end > size) end = size; //to satisfy interface doc condition
         int len = (int) (end - start);
         if (len > 0) {
-            byte[] sub = new byte[(int) (end - start)];
-            System.arraycopy(content, (int) start, sub, 0, sub.length);
+            byte[] sub = new byte[len];
+            System.arraycopy(content, (int) start, sub, 0, len);
             return sub;
         } else if (len == 0)
             return new byte[0];
         else
-            throw new StorageSystemException("Cannot create a byte array with less than 0 bytes.");
+            throw new StorageSystemException("Cannot create a byte array with less than 0 bytes. - sub: start="+start+", end="+end);
+    }
+
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
+        if(start > size) throw new StorageSystemException("Too large, start("+start+") > size("+size+")");
+        grow_to_at_least(start + (off_end-off));
+//        System.out.println("part.length: "+part.length);
+//        System.out.println("off: "+off);
+//        System.out.println("off_end: "+off_end);
+//        System.out.println("content.length: "+content.length);
+//        System.out.println("start: "+start);
+//        System.out.println("Math.min(part.length-off, off_end-off): "+Math.min(part.length-off, off_end-off));
+        System.arraycopy(part, off, content, (int) start, Math.min(part.length-off, off_end-off));
+        size = (int) Math.max(start+(off_end-off), contentSize());
+        return this;
+    }
+
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
+        return set(start, part, 0, part.length);
     }
 
     @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
-        if(start > size) throw new StorageSystemException("Too large, start > size");
-        grow_to_at_least(start + part.length);
-        System.arraycopy(part, 0, content, (int) start, part.length);
-        size = (int) Math.max(start+part.length, contentSize());
-        return this;
+        return set(start, part, 0);
     }
 
     @Override public InputStream substream(long start, long end) throws StorageSystemException {

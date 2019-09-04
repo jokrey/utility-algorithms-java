@@ -9,12 +9,12 @@ import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.deleg
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteEncoderBytes;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteEncoderServer;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.thread_safe.SynchronizingTagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.LITagCachedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.remote.encoder.LIRemoteEncoderServer;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer_MultiFile;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LITagStringEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.LITagCachedEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.remote.encoder.LIRemoteEncoderServer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.remote.encoder.authenticated.LIAuthenticatedRemoteEncoderServer_MultiFile;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.string.LITagStringEncoder;
 import jokrey.utilities.debug_analysis_helper.ConcurrentPoolTester;
 import jokrey.utilities.encoder.tag_based.tests.AuthenticatedRemoteEncoderTest;
 import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
@@ -65,9 +65,8 @@ public class PerformanceTests {
 
     @Test
     public void litbe_ramStoragePRINTONLY() {
-        GenericPerformanceTest.run_standard_test_many("LITagBytesEncoder | RAM storage", (introduction_text, results) -> {
-            AverageCallTimeMarker.print_all(results, introduction_text);
-        }, new LITagBytesEncoder());
+        AverageCallTimeMarker.Call_Count_Average_Min_Max[] results = GenericPerformanceTest.test_print_all(new LITagBytesEncoder(), 1000, 1, new byte[100000]);
+            AverageCallTimeMarker.print_all(results, "");
     }
 
     @Test
@@ -326,12 +325,12 @@ public class PerformanceTests {
     }
 
 
-    private static void writeResults(String introduction, AverageCallTimeMarker.Call_Count_Average[] combined_res) {
+    private static void writeResults(String introduction, AverageCallTimeMarker.Call_Count_Average_Min_Max[] combined_res) {
         if(result_writer!=null) {
             try {
                 result_writer.append(introduction).append("\n");
 
-                for(AverageCallTimeMarker.Call_Count_Average c:combined_res)
+                for(AverageCallTimeMarker.Call_Count_Average_Min_Max c:combined_res)
                     result_writer.append(c.toString()).append("\n");
 
                 result_writer.append("==================================================\n");

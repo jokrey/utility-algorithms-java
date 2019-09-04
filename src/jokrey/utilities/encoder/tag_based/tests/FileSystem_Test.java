@@ -1,7 +1,7 @@
 package jokrey.utilities.encoder.tag_based.tests;
 
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.files.Simple1FileFileSystem;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

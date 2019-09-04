@@ -1,7 +1,7 @@
 package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.files;
 
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
 

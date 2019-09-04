@@ -1,13 +1,13 @@
 package jokrey.utilities.encoder.tag_based.tests.serialization.annotated;
 
-import jokrey.utilities.encoder.tag_based.EncodableAsBytes;
-import jokrey.utilities.encoder.tag_based.EncodableAsString;
+import jokrey.utilities.encoder.EncodableAsBytes;
+import jokrey.utilities.encoder.EncodableAsString;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LIbae;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.serialization.LIObjectEncoderAnnotation;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LITagStringEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.string.LIse;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.serialization.LIObjectEncoderAnnotation;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.string.LITagStringEncoder;
+import jokrey.utilities.encoder.as_union.li.string.LIse;
 import jokrey.utilities.encoder.tag_based.serialization.field.annotated.ObjectEncoderAnnotation;
 import jokrey.utilities.encoder.tag_based.tests.serialization.beanish.TestBeanObject;
 import org.junit.Test;

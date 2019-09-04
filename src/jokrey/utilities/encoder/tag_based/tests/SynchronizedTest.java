@@ -7,11 +7,11 @@ import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.deleg
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteEncoderBytes;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated.AuthenticatedRemoteEncoderServer;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.thread_safe.SynchronizingTagBasedEncoderBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.tuple.TupleTagMultiLIEncodersBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.tuple.TupleTagMultiLIEncodersBytesSynchronized;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.tuple.TupleTagSingleLITagEncoderBytes;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.tuple.TupleTagSingleLITagEncoderBytesSynchronized;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.tuple.TupleTagMultiLIEncodersBytes;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.tuple.TupleTagMultiLIEncodersBytesSynchronized;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.tuple.TupleTagSingleLITagEncoderBytes;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.tuple.TupleTagSingleLITagEncoderBytesSynchronized;
 import jokrey.utilities.encoder.tag_based.tuple_tag.SynchronizingTupleTagBasedEncoderBytes;
 import jokrey.utilities.encoder.tag_based.tuple_tag.TupleTagBasedEncoderBytes;
 import org.junit.Test;

@@ -2,7 +2,7 @@ package jokrey.utilities.encoder.tag_based.tests;
 
 import jokrey.utilities.debug_analysis_helper.ConcurrentPoolTester;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.thread_safe.SynchronizingTagBasedEncoder;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
 import jokrey.utilities.transparent_storage.bytes.remote.RemoteStorage;
 import jokrey.utilities.transparent_storage.bytes.remote.RemoteStorageMCNPCauses;
 import jokrey.utilities.transparent_storage.bytes.remote.server.RemoteStorageServer;

@@ -1,10 +1,9 @@
 package jokrey.utilities.encoder.examples;
 
 import jokrey.utilities.command.line.helper.Argument;
-import jokrey.utilities.command.line.helper.ConstrainedCommand;
 import jokrey.utilities.command.line.helper.CommandLoop;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.files.Simple1FileFileSystem;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.bytes.LITagBytesEncoder;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.bytes.LITagBytesEncoder;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,8 +1,7 @@
 package jokrey.utilities.encoder.type_transformer;
 
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.type.transformer.LITypeToBytesTransformer;
-import jokrey.utilities.encoder.tag_based.implementation.length_indicator.type.transformer.LITypeToStringTransformer;
-import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToStringTransformer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
