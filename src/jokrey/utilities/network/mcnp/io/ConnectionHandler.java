@@ -1,9 +1,8 @@
 package jokrey.utilities.network.mcnp.io;
 
-import jokrey.utilities.simple.data_structure.pairs.Pair;
-import jokrey.utilities.network.mcnp.MCNP_Connection;
-
 import java.io.IOException;
+
+import jokrey.utilities.simple.data_structure.pairs.Pair;
 
 public interface ConnectionHandler<CT extends ConnectionHandler.ConnectionState> {
     /** Called after the server has received a new c
@@ -13,7 +12,7 @@ public interface ConnectionHandler<CT extends ConnectionHandler.ConnectionState>
      * @throws IOException on i/o error
      * @return returns the generated state. Can be null.
      */
-    CT newConnection(int initial_cause, MCNP_Connection connection) throws IOException;
+    CT newConnection(int initial_cause, MCNP_ConnectionIO connection) throws IOException;
 
     /** Called after the client has new data to read(without reading that data)
      * Should return to wait for new data.
@@ -23,12 +22,14 @@ public interface ConnectionHandler<CT extends ConnectionHandler.ConnectionState>
      * @return the altered or unaltered state
      * @throws IOException on i/o error
      */
-    CT handleInteraction(TypedCause type_cause, MCNP_Connection connection, CT state) throws IOException;
+    CT handleInteraction(TypedCause type_cause, MCNP_ConnectionIO connection, CT state) throws IOException;
 
     class TypedCause extends Pair<Integer, Integer> {
-        public TypedCause(Integer left, Integer right) {
-            super(left, right);
+        public TypedCause(Integer type, Integer cause) {
+            super(type, cause);
         }
+        public int getType() {return getLeft();}
+        public int getCause() {return getRight();}
     }
     class ConnectionState {
         public final int connection_type;

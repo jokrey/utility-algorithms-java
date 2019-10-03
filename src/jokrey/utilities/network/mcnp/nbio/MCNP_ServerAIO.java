@@ -1,15 +1,14 @@
 package jokrey.utilities.network.mcnp.nbio;
 
-import jokrey.utilities.network.mcnp.io.ConnectionHandler;
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
-import jokrey.utilities.network.mcnp.MCNP_Server;
-import jokrey.utilities.network.mcnp.nbio.MCNP_ConnectionAIO.CauseReceivedHandler;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+
+import jokrey.utilities.network.mcnp.MCNP_Server;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 
 /**
  *
@@ -40,10 +39,10 @@ public class MCNP_ServerAIO<CT extends ConnectionState> extends MCNP_Server<CT> 
         return !isRunning() && serverSocket.isOpen();
     }
 
-    private CauseReceivedHandler<CT> cause_handler;
+    private MCNP_ConnectionAIO.CauseReceivedHandler<CT> cause_handler;
 
     public void runListenerLoop() throws IOException {
-        if(connectionHandler == null) throw new IllegalStateException("No c handler set.");
+        if(connectionHandler == null) throw new IllegalStateException("No con handler set.");
 
         cause_handler = (conn, cause, state) -> {
             connectionHandler.handleInteraction(conn, new ConnectionHandler.TypedCause(state.connection_type, cause), state,
@@ -60,7 +59,7 @@ public class MCNP_ServerAIO<CT extends ConnectionState> extends MCNP_Server<CT> 
             @Override public void completed(AsynchronousSocketChannel asynchronousSocketChannel, Object o) {
                 serverSocket.accept(null, this); //recursion
                 pool.submit(() -> {
-                    new MCNP_ConnectionAIO(asynchronousSocketChannel).expect_cause(null, (CauseReceivedHandler<CT>) (conn, cause, state) -> {
+                    new MCNP_ConnectionAIO(asynchronousSocketChannel).expect_cause(null, (MCNP_ConnectionAIO.CauseReceivedHandler<CT>) (conn, cause, state) -> {
                         connectionHandler.newConnection(cause, conn,
                                 newState -> conn.expect_cause(newState, cause_handler));
                     });

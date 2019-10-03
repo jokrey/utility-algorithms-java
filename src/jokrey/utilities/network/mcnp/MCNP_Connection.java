@@ -1,19 +1,20 @@
 package jokrey.utilities.network.mcnp;
 
-import jokrey.utilities.simple.data_structure.pairs.Pair;
-import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
+import jokrey.utilities.simple.data_structure.pairs.Pair;
+
 public interface MCNP_Connection extends AutoCloseable {
     long NULL_INDICATOR = -1;
 
+    @Override void close() throws IOException;
     default void tryClose() {
-        try { close(); } catch (Exception ignored) {}
+        try { close(); } catch (IOException ignored) {}
     }
     boolean isClosed();
 
@@ -77,7 +78,7 @@ public interface MCNP_Connection extends AutoCloseable {
 
 
     default void send_utf8(String s) throws IOException {
-        send_variable(s.getBytes(StandardCharsets.UTF_8));
+        send_variable(s==null?null:s.getBytes(StandardCharsets.UTF_8));
     }
     default String receive_utf8() throws IOException {
         byte[] arr = receive_variable();
@@ -174,13 +175,9 @@ public interface MCNP_Connection extends AutoCloseable {
                     return read;
                 }
             }
-            @Override public long skip(long n) throws IOException {
-                System.err.println("MCNP_HELPER.get_input_stream_for_variable_chunk.skip has been used and will work, but is not optimized. -> Optimize now");
-                return super.skip(n);
-            }
             @Override public void close() {
                 //DO NOT CLOSE connectionInputStream INPUT STREAM.
-                //We definitely need that one again
+                //We definitely might need that one again
             }
         });
     }

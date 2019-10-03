@@ -1,14 +1,14 @@
 package jokrey.utilities.network.mcnp.io;
 
-import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
-import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
-import jokrey.utilities.network.mcnp.MCNP_Connection;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
+import jokrey.utilities.network.mcnp.MCNP_Connection;
 
 /**
  * A simple comfort wrapper for the client side of a MCNP c.
@@ -20,6 +20,11 @@ public class MCNP_ConnectionIO implements MCNP_Connection {
     private final Socket connection;
     private final OutputStream out;
     private final InputStream in;
+    public MCNP_ConnectionIO(MCNP_ConnectionIO connection) {
+        this.connection = connection.connection;
+        this.out = connection.out;
+        this.in = connection.in;
+    }
     public MCNP_ConnectionIO(Socket connection) throws IOException {
         this.connection = connection;
         this.out = connection.getOutputStream();

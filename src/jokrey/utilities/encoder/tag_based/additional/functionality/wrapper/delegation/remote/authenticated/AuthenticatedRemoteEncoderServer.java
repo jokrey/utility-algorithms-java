@@ -1,5 +1,6 @@
 package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.authenticated;
 
+import jokrey.utilities.network.mcnp.io.MCNP_ConnectionIO;
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.RemoteEncoderMCNPCauses;
 import jokrey.utilities.encoder.helper.ConcurrentMultiMap;
@@ -57,7 +58,7 @@ public class AuthenticatedRemoteEncoderServer extends DelegatingTupleTagBasedEnc
         super(thread_safe_encoder);
 
         server = new MCNP_ServerIO<>(port, new CauseHandlerMap<AuthenticatedConnectionState>() {
-            @Override public AuthenticatedConnectionState newConnection(int initial_cause, MCNP_Connection connection) throws IOException {
+            @Override public AuthenticatedConnectionState newConnection(int initial_cause, MCNP_ConnectionIO connection) throws IOException {
                  return handle_connection_initialization(initial_cause, connection);
             }
                 

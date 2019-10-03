@@ -1,12 +1,12 @@
 package jokrey.utilities.network.mcnp;
 
-import jokrey.utilities.network.mcnp.io.ConnectionHandler;
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
-
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import jokrey.utilities.network.mcnp.io.ConnectionHandler;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 
 public abstract class MCNP_Server<CT extends ConnectionState> implements AutoCloseable {
     public final int port;
@@ -16,7 +16,7 @@ public abstract class MCNP_Server<CT extends ConnectionState> implements AutoClo
 
     public MCNP_Server(int port, int min_threads, int max_threads) {
         this.port = port;
-        pool = new ThreadPoolExecutor(min_threads, max_threads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        pool = new ThreadPoolExecutor(min_threads, max_threads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     }
     public MCNP_Server(int port) {
         this(port, 0, Integer.MAX_VALUE);
@@ -39,8 +39,6 @@ public abstract class MCNP_Server<CT extends ConnectionState> implements AutoClo
     }
 
     public abstract boolean isProperlyClosed();
-
-//    public abstract void setConnectionHandler(ConnectionHandler<CT> connectionHandler);
 
 
     public void runListenerLoopInThread() {

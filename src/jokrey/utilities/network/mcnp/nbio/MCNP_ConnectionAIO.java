@@ -1,10 +1,5 @@
 package jokrey.utilities.network.mcnp.nbio;
 
-import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
-import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
-import jokrey.utilities.network.mcnp.MCNP_Connection;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -13,6 +8,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.encoder.type_transformer.TypeToFromRawTransformer;
+import jokrey.utilities.network.mcnp.MCNP_Connection;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 
 /**
  * A simple comfort wrapper for the client side of a MCNP c.

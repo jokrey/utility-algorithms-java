@@ -1,6 +1,7 @@
 package jokrey.utilities.transparent_storage.bytes.remote.server;
 
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
+import jokrey.utilities.network.mcnp.io.MCNP_ConnectionIO;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
@@ -101,7 +102,7 @@ public class RemoteStorageServer implements TransparentBytesStorage {
         private AtomicLong global_connection_counter = new AtomicLong(0);
         private AtomicLong current_connection_count = new AtomicLong(0);
 
-        @Override public ConnectionState newConnection(int initial_cause, MCNP_Connection connection) {
+        @Override public ConnectionState newConnection(int initial_cause, MCNP_ConnectionIO connection) {
             long thread_local_thread_id = global_connection_counter.getAndIncrement();
             long current_connection_count_start = current_connection_count.getAndIncrement();
             System.err.println("Client connected. Number "+thread_local_thread_id+".");
@@ -131,7 +132,7 @@ public class RemoteStorageServer implements TransparentBytesStorage {
             System.err.println("Number of clients currently connected: "+current_connection_count_end);
             return null;
         }
-        @Override public ConnectionState handleInteraction(TypedCause type_cause, MCNP_Connection connection, ConnectionState aVoid) { return null; }
+        @Override public ConnectionState handleInteraction(TypedCause type_cause, MCNP_ConnectionIO connection, ConnectionState aVoid) { return null; }
     }
 
 

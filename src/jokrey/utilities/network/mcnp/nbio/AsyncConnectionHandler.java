@@ -1,8 +1,9 @@
 package jokrey.utilities.network.mcnp.nbio;
 
+import java.io.IOException;
+
 import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 import jokrey.utilities.network.mcnp.io.ConnectionHandler.TypedCause;
-import java.io.IOException;
 
 public interface AsyncConnectionHandler<CT extends ConnectionState> {
     /** Called after the server has received a new c

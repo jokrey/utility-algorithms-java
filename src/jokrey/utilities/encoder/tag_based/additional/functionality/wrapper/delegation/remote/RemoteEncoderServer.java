@@ -1,5 +1,6 @@
 package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote;
 
+import jokrey.utilities.network.mcnp.io.MCNP_ConnectionIO;
 import jokrey.utilities.simple.data_structure.pairs.Pair;
 import jokrey.utilities.encoder.tag_based.TagBasedEncoderBytes;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.thread_safe.SynchronizingTagBasedEncoderBytes;
@@ -41,7 +42,7 @@ public class RemoteEncoderServer extends SynchronizingTagBasedEncoderBytes imple
         super(encoder);
 
         server = new MCNP_ServerIO<>(port, new CauseHandlerMap<ConnectionState>() {
-            @Override public ConnectionState newConnection(int initial_cause, MCNP_Connection connection) {
+            @Override public ConnectionState newConnection(int initial_cause, MCNP_ConnectionIO connection) {
                 switch (initial_cause) {
                     case RemoteEncoderMCNPCauses.CONNECTION_TYPE__IS_OBSERVER:
                         observers.add(new RemoteEncoderObserverConnection(connection));

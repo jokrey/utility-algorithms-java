@@ -1,6 +1,5 @@
 package jokrey.utilities.network.mcnp.io;
 
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 import jokrey.utilities.network.mcnp.MCNP_Server;
 
 import java.io.EOFException;
@@ -13,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author jokrey
  */
-public class MCNP_ServerIO<CT extends ConnectionState> extends MCNP_Server<CT> implements AutoCloseable {
+public class MCNP_ServerIO<CT extends ConnectionHandler.ConnectionState> extends MCNP_Server<CT> implements AutoCloseable {
     private ServerSocket serverSocket;
 
     public MCNP_ServerIO(int port) {
@@ -59,7 +58,7 @@ public class MCNP_ServerIO<CT extends ConnectionState> extends MCNP_Server<CT> i
 
                 Runnable r = () -> {
                     int numberOfSimultaneousConnections = number.getAndIncrement();
-                    System.out.println("bef: "+numberOfSimultaneousConnections);
+//                    System.out.println("bef: "+numberOfSimultaneousConnections);
                     MCNP_ConnectionIO conn = null;
                     try {
                         conn = new MCNP_ConnectionIO(newConnection);
@@ -73,9 +72,12 @@ public class MCNP_ServerIO<CT extends ConnectionState> extends MCNP_Server<CT> i
                         System.err.println("EOF from c(" + conn + "): " + e.getMessage());
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } finally {
+                        if(conn != null)
+                            conn.tryClose();
                     }
                     number.getAndDecrement();
-                    System.out.println("aft: "+numberOfSimultaneousConnections);
+//                    System.out.println("aft: "+numberOfSimultaneousConnections);
                 };
                 new Thread(r).start();
 //                pool.execute(r);  //this - weirdly - does not work(even with

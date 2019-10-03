@@ -1,16 +1,18 @@
 package jokrey.utilities.network.mcnp;
 
+import java.io.IOException;
+import java.nio.channels.CompletionHandler;
+import java.util.concurrent.TimeUnit;
+
 import jokrey.utilities.debug_analysis_helper.ConcurrentPoolTester;
 import jokrey.utilities.network.mcnp.io.CauseHandlerMap;
 import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 import jokrey.utilities.network.mcnp.io.MCNP_ClientIO;
+import jokrey.utilities.network.mcnp.io.MCNP_ConnectionIO;
 import jokrey.utilities.network.mcnp.io.MCNP_ServerIO;
 import jokrey.utilities.network.mcnp.nbio.AsyncCauseHandlerMap;
 import jokrey.utilities.network.mcnp.nbio.MCNP_ConnectionAIO;
 import jokrey.utilities.network.mcnp.nbio.MCNP_ServerAIO;
-import java.io.IOException;
-import java.nio.channels.CompletionHandler;
-import java.util.concurrent.*;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -129,7 +131,7 @@ public class Test {
     }
     public static void initiate(MCNP_ServerIO<ConnectionState> server) {
         server.setConnectionHandler(new CauseHandlerMap<ConnectionState>() {
-            @Override public ConnectionState newConnection(int initial_cause, MCNP_Connection connection) {
+            @Override public ConnectionState newConnection(int initial_cause, MCNP_ConnectionIO connection) {
                 try {
 //                    System.out.println("OK, handling c. First we expect the cause.");
 //                    int cause = c.read_cause();

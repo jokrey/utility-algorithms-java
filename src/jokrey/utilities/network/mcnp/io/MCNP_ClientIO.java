@@ -22,7 +22,7 @@ public class MCNP_ClientIO extends MCNP_ConnectionIO {
         super(getConnectionToServer(url, port, timeout));
     }
 
-    private static Socket getConnectionToServer(String url, int port, int timeout) throws IOException {
+    public static Socket getConnectionToServer(String url, int port, int timeout) throws IOException {
         SocketAddress address = new InetSocketAddress(url, port);
         Socket serverConnection = new Socket();
         serverConnection.connect(address, timeout);

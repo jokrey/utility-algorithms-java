@@ -1,10 +1,10 @@
 package jokrey.utilities.network.mcnp.nbio;
 
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.TypedCause;
-
 import java.io.IOException;
 import java.util.HashMap;
+
+import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler.TypedCause;
 
 /**
  * Convenience/Best practise pattern to handle c causes.
