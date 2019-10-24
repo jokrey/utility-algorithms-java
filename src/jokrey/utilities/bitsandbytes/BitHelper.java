@@ -371,20 +371,26 @@ public class BitHelper {
                 ((bytes[off+3] & 0xff)      );
     }
 
-    public static long getIntFromNBytes(byte[] bytes, int offset, int len) {
-        long l = 0;
-        for(int i=0;i<len;i++) {
-            if(i==0)
-                l |= (bytes[offset + i]) << (len - i - 1) * 8;
-            else
-                l |= (bytes[offset + i] & 0xff) << (len - i - 1) * 8;
-        }
-        return l;
-//        return  ((bytes[off  ]       ) << 24) |
-//                ((bytes[off+1] & 0xff) << 16) |
-//                ((bytes[off+2] & 0xff) <<  8) |
-//                ((bytes[off+3] & 0xff)      );
-    }
+	public static long getIntFromNBytes(byte[] bytes, int offset, int len) {
+		long l = 0;
+		for(int i=0;i<len;i++) {
+			if(i==0)
+				l |= (bytes[offset + i]) << (len - i - 1) * 8;
+			else
+				l |= (bytes[offset + i] & 0xff) << (len - i - 1) * 8;
+		}
+		return l;
+	}
+	public static int getInt32FromNBytes(byte[] bytes, int offset) {
+		int val = 0;
+		for(int i=0;i<4;i++) {
+			if(i==0)
+				val |= (bytes[offset + i]) << (4 - i - 1) * 8;
+			else
+				val |= (bytes[offset + i] & 0xff) << (4 - i - 1) * 8;
+		}
+		return val;
+	}
 
 	public static long getUIntFromNBytes(byte[] b, int offset, int len) {
 		long l = 0;
