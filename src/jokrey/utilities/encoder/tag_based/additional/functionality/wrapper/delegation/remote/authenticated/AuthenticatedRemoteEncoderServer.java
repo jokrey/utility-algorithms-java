@@ -61,22 +61,27 @@ public class AuthenticatedRemoteEncoderServer extends DelegatingTupleTagBasedEnc
             @Override public AuthenticatedConnectionState newConnection(int initial_cause, MCNP_ConnectionIO connection) throws IOException {
                  return handle_connection_initialization(initial_cause, connection);
             }
+
+            @Override public void connectionDropped(MCNP_ConnectionIO conn, AuthenticatedConnectionState state, boolean eof) {
+                System.err.println("connection dropped: "+conn);
+            }
+            @Override public void connectionDroppedWithError(Throwable t, MCNP_ConnectionIO conn, AuthenticatedConnectionState state) { t.printStackTrace(); }
                 
             {
                 add_handlers(AuthenticatedRemoteEncoderMCNPCauses.LOGIN_CAUSE);
                 add_handlers(AuthenticatedRemoteEncoderMCNPCauses.REGISTER_CAUSE);
             }
             private void add_handlers(int type) {
-                add_handler(type, RemoteEncoderMCNPCauses.ADD_ENTRY_BYTE_ARR, (connection2, s2) -> AuthenticatedRemoteEncoderServer.this.handle_add_entry_byte_arr_by(connection2, s2));
-                add_handler(type, RemoteEncoderMCNPCauses.ADD_ENTRY_BYTE_ARR_NOCHECK, (connection1, s1) -> AuthenticatedRemoteEncoderServer.this.handle_add_entry_byte_arr_nocheck_by(connection1, s1));
-                add_handler(type, RemoteEncoderMCNPCauses.GET_ENTRY_BYTE_ARR, (connection1, s1) -> AuthenticatedRemoteEncoderServer.this.handle_get_entry_byte_arr_by(connection1, s1));
-                add_handler(type, RemoteEncoderMCNPCauses.DELETE_ENTRY_BYTE_ARR, (connection, s) -> AuthenticatedRemoteEncoderServer.this.handle_delete_entry_byte_arr_by(connection, s));
-                add_handler(type, RemoteEncoderMCNPCauses.DELETE_NO_RETURN, (connection, s) -> AuthenticatedRemoteEncoderServer.this.handle_delete_no_return_by(connection, s));
-                add_handler(type, RemoteEncoderMCNPCauses.EXISTS, (connection, s) -> AuthenticatedRemoteEncoderServer.this.handle_exists_by(connection, s));
-                add_handler(type, RemoteEncoderMCNPCauses.GET_TAGS, (connection, s) -> AuthenticatedRemoteEncoderServer.this.handle_get_tags_by(connection, s));
-                add_handler(type, RemoteEncoderMCNPCauses.LENGTH, (connection1, s1) -> AuthenticatedRemoteEncoderServer.this.handle_length_by(connection1, s1));
-                add_handler(type, RemoteEncoderMCNPCauses.CLEAR, (connection1, s1) -> AuthenticatedRemoteEncoderServer.this.handle_clear_by(connection1, s1));
-                add_handler(type, AuthenticatedRemoteEncoderMCNPCauses.UNREGISTER_CAUSE, (connection, s) -> AuthenticatedRemoteEncoderServer.this.handle_unregister_by(connection, s));
+                add_handler(type, RemoteEncoderMCNPCauses.ADD_ENTRY_BYTE_ARR, AuthenticatedRemoteEncoderServer.this::handle_add_entry_byte_arr_by);
+                add_handler(type, RemoteEncoderMCNPCauses.ADD_ENTRY_BYTE_ARR_NOCHECK, AuthenticatedRemoteEncoderServer.this::handle_add_entry_byte_arr_nocheck_by);
+                add_handler(type, RemoteEncoderMCNPCauses.GET_ENTRY_BYTE_ARR, AuthenticatedRemoteEncoderServer.this::handle_get_entry_byte_arr_by);
+                add_handler(type, RemoteEncoderMCNPCauses.DELETE_ENTRY_BYTE_ARR, AuthenticatedRemoteEncoderServer.this::handle_delete_entry_byte_arr_by);
+                add_handler(type, RemoteEncoderMCNPCauses.DELETE_NO_RETURN, AuthenticatedRemoteEncoderServer.this::handle_delete_no_return_by);
+                add_handler(type, RemoteEncoderMCNPCauses.EXISTS, AuthenticatedRemoteEncoderServer.this::handle_exists_by);
+                add_handler(type, RemoteEncoderMCNPCauses.GET_TAGS, AuthenticatedRemoteEncoderServer.this::handle_get_tags_by);
+                add_handler(type, RemoteEncoderMCNPCauses.LENGTH, AuthenticatedRemoteEncoderServer.this::handle_length_by);
+                add_handler(type, RemoteEncoderMCNPCauses.CLEAR, AuthenticatedRemoteEncoderServer.this::handle_clear_by);
+                add_handler(type, AuthenticatedRemoteEncoderMCNPCauses.UNREGISTER_CAUSE, AuthenticatedRemoteEncoderServer.this::handle_unregister_by);
             }
         });
         server.runListenerLoopInThread();

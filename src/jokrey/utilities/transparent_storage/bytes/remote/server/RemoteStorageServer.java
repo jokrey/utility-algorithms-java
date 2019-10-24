@@ -133,6 +133,11 @@ public class RemoteStorageServer implements TransparentBytesStorage {
             return null;
         }
         @Override public ConnectionState handleInteraction(TypedCause type_cause, MCNP_ConnectionIO connection, ConnectionState aVoid) { return null; }
+
+        @Override public void connectionDropped(MCNP_ConnectionIO conn, ConnectionState state, boolean eof) {
+            System.err.println("connection dropped: "+conn);
+        }
+        @Override public void connectionDroppedWithError(Throwable t, MCNP_ConnectionIO conn, ConnectionState state) { t.printStackTrace(); }
     }
 
 

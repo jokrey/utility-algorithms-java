@@ -25,8 +25,8 @@ Each new connection gets a new thread and wait's in an endless loop for new conn
 If a cause comes in then the server litbe is locked and the request is handled.
 
 Each method defined as mandatory in litbe requires direct implementation in the rbae protocol.
-  Their mcnp-cause id's are for example defined in RemoteEncoderMCNPCauses.java.
-  The id's defined there are final and are required to be used by every implementation to ensure compatibility.
+  Their mcnp-cause type's are for example defined in RemoteEncoderMCNPCauses.java.
+  The type's defined there are final and are required to be used by every implementation to ensure compatibility.
 The client sends the correct cause to the server.
 And the server handles it according to a specific protocol for each request.
     (how exactly they work would take this too far, check any of the already valid implementations)

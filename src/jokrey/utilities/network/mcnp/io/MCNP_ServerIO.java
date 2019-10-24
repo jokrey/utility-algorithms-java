@@ -1,11 +1,13 @@
 package jokrey.utilities.network.mcnp.io;
 
+import jokrey.utilities.network.mcnp.MCNP_Connection;
 import jokrey.utilities.network.mcnp.MCNP_Server;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -52,32 +54,35 @@ public class MCNP_ServerIO<CT extends ConnectionHandler.ConnectionState> extends
         System.out.println("serverSocket.getLocalPort: "+serverSocket.getLocalPort());
 
         try {
-            AtomicInteger number = new AtomicInteger(0);
             while (isRunning() && !serverSocket.isClosed()) {
                 Socket newConnection = serverSocket.accept();
 
                 Runnable r = () -> {
-                    int numberOfSimultaneousConnections = number.getAndIncrement();
-//                    System.out.println("bef: "+numberOfSimultaneousConnections);
                     MCNP_ConnectionIO conn = null;
+                    CT state = null;
                     try {
                         conn = new MCNP_ConnectionIO(newConnection);
                         int initial_cause = conn.receive_cause();
-                        CT state = connectionHandler.newConnection(initial_cause, conn);
+                        state = connectionHandler.newConnection(initial_cause, conn);
                         while (!conn.isClosed()) {
                             int cause = conn.receive_cause();
                             state = connectionHandler.handleInteraction(new ConnectionHandler.TypedCause(initial_cause, cause), conn, state);
                         }
-                    } catch (EOFException e) {
-                        System.err.println("EOF from c(" + conn + "): " + e.getMessage());
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        connectionHandler.connectionDropped(conn, state, false);
+                    } catch (EOFException eof) {
+//                        eof.printStackTrace();
+                        connectionHandler.connectionDropped(conn, state, true);
+                    } catch(SocketException t) {
+                        if(t.getMessage().equals("Socket closed"))
+                            connectionHandler.connectionDropped(conn, state, true);
+                        else
+                            connectionHandler.connectionDroppedWithError(t, conn, state);
+                    } catch (Throwable t) {
+                        connectionHandler.connectionDroppedWithError(t, conn, state);
                     } finally {
                         if(conn != null)
                             conn.tryClose();
                     }
-                    number.getAndDecrement();
-//                    System.out.println("aft: "+numberOfSimultaneousConnections);
                 };
                 new Thread(r).start();
 //                pool.execute(r);  //this - weirdly - does not work(even with
@@ -90,5 +95,25 @@ public class MCNP_ServerIO<CT extends ConnectionHandler.ConnectionState> extends
             if(!isProperlyClosed())
                 close();
         }
+    }
+
+    public void handleExternalInitializedConnection(CT stateG, int initial_cause, MCNP_ConnectionIO conn) {
+        new Thread(() -> {
+            CT state = stateG;
+            try {
+                while (!conn.isClosed()) {
+                    int cause = conn.receive_cause();
+                    state = connectionHandler.handleInteraction(new ConnectionHandler.TypedCause(initial_cause, cause), conn, state);
+                }
+                connectionHandler.connectionDropped(conn, state, false);
+            } catch (EOFException eof) {
+                connectionHandler.connectionDropped(conn, state, true);
+            } catch (Throwable t) {
+                connectionHandler.connectionDroppedWithError(t, conn, state);
+            } finally {
+                if(conn != null)
+                    conn.tryClose();
+            }
+        }).start();
     }
 }

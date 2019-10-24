@@ -55,6 +55,11 @@ public class RemoteEncoderServer extends SynchronizingTagBasedEncoderBytes imple
                 return null;
             }
 
+            @Override public void connectionDropped(MCNP_ConnectionIO conn, ConnectionState state, boolean eof) {
+                System.err.println("connection dropped: "+conn);
+            }
+            @Override public void connectionDroppedWithError(Throwable t, MCNP_ConnectionIO conn, ConnectionState state) { t.printStackTrace(); }
+
             {
                 add_handler(RemoteEncoderMCNPCauses.CONNECTION_TYPE__IS_CLIENT, RemoteEncoderMCNPCauses.ADD_ENTRY_BYTE_ARR, RemoteEncoderServer.this::handle_add_entry_byte_arr_by);
                 add_handler(RemoteEncoderMCNPCauses.CONNECTION_TYPE__IS_CLIENT, RemoteEncoderMCNPCauses.ADD_ENTRY_BYTE_ARR_NOCHECK, RemoteEncoderServer.this::handle_add_entry_byte_arr_nocheck_by);

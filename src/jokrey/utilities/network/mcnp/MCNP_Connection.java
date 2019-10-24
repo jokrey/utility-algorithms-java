@@ -32,12 +32,12 @@ public interface MCNP_Connection extends AutoCloseable {
     int receive_fixed(byte[] b, int off, int len) throws IOException;
     default byte[] receive_fixed(int length) throws IOException {
         byte[] total = new byte[length];
-        byte[] buffer = new byte[1024*4];
+        byte[] buffer = new byte[Math.min(length, 1024*4)];
         long byteCounter = 0;
         while(byteCounter<length) {
             int read = receive_fixed(buffer, 0, Math.min(buffer.length, (int) (length-byteCounter)));
             if(read == -1)
-                throw new EOFException();
+                throw new EOFException("read -1 at receiving fixed");
             System.arraycopy(buffer, 0, total, (int) byteCounter, read);
             byteCounter+=read;
         }
@@ -72,7 +72,14 @@ public interface MCNP_Connection extends AutoCloseable {
         if(length == NULL_INDICATOR)
             return null;
         else if(length > Integer.MAX_VALUE)
-            throw new IOException("value to large, consider reading into stream instead");
+            throw new IOException("length("+length+") to large, consider reading into stream instead (or reevaluate connection handling: correct order?, multi threading issue)");
+        return receive_fixed((int) length);
+    }
+    default byte[] receive_variable(int maxBytes) throws IOException {
+        long length = receive_int64();
+        if(length > maxBytes) throw new IOException("length("+length+") > maxBytes("+maxBytes+") - potential slow loris attack prevented");
+        if(length == NULL_INDICATOR)
+            return null;
         return receive_fixed((int) length);
     }
 
@@ -82,6 +89,12 @@ public interface MCNP_Connection extends AutoCloseable {
     }
     default String receive_utf8() throws IOException {
         byte[] arr = receive_variable();
+        if(arr == null)
+            return null;
+        return new String(arr, StandardCharsets.UTF_8);
+    }
+    default String receive_utf8(int maxBytes) throws IOException {
+        byte[] arr = receive_variable(maxBytes);
         if(arr == null)
             return null;
         return new String(arr, StandardCharsets.UTF_8);

@@ -24,6 +24,9 @@ public interface ConnectionHandler<CT extends ConnectionHandler.ConnectionState>
      */
     CT handleInteraction(TypedCause type_cause, MCNP_ConnectionIO connection, CT state) throws IOException;
 
+    void connectionDropped(MCNP_ConnectionIO conn, CT state, boolean eof);
+    void connectionDroppedWithError(Throwable t, MCNP_ConnectionIO conn, CT state);
+
     class TypedCause extends Pair<Integer, Integer> {
         public TypedCause(Integer type, Integer cause) {
             super(type, cause);

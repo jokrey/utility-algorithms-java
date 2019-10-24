@@ -3,6 +3,7 @@ package jokrey.utilities.network.mcnp.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -32,7 +33,7 @@ public class MCNP_ConnectionIO implements MCNP_Connection {
     }
 
     @Override public void close() throws IOException {
-        connection.getOutputStream().flush();
+        flush();
         connection.close();//also closes streams
     }
     public boolean isClosed() {

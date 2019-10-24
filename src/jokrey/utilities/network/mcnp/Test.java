@@ -151,6 +151,11 @@ public class Test {
                 return new ConnectionState(initial_cause);
             }
 
+            @Override public void connectionDropped(MCNP_ConnectionIO conn, ConnectionState state, boolean eof) {
+                System.err.println("connection dropped: "+conn);
+            }
+            @Override public void connectionDroppedWithError(Throwable t, MCNP_ConnectionIO conn, ConnectionState state) { t.printStackTrace(); }
+
             {
                 add_handler(1, 12, (connection, state) -> {
                     byte b = connection.receive_byte();
