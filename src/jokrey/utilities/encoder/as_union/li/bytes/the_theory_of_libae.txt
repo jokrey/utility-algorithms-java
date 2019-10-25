@@ -5,7 +5,7 @@ Simple, low-level byte encoder.
 
 Encodes variable number of byte chunks into a single one.
 
-This is done by using a single byte to indicate how many bytes are required store the chunk length  (using 64 bit integer, due to Java's long primitive)
+This is done by using a single byte to indicate how many bytes are required store the chunk payloadLength  (using 64 bit integer, due to Java's long primitive)
    (at most 8, because that a lot of Terrabyte and long isn't longer)
    Then it writes how many bytes are required to store the chunk (big endian)
    Then comes the chunk itself.
@@ -24,7 +24,7 @@ A LIbae implementation has to have the following methods:
 	li_encode_single(byte[])
 		encodes and appends bytes to storage
 	li_encode_single(stream, stream_length)
-		encodes and appends stream of length stream_length to storage
+		encodes and appends stream of payloadLength stream_length to storage
 
 
 	reset_read_pointer()

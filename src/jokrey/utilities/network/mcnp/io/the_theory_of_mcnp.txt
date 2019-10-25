@@ -6,9 +6,9 @@ Useful for simple, standardized inter programming language communication. Where 
 Inter-programming Language entails that both sides will only be able to use the most basic, low level byte-"streams" (or whatever expression of that is available).
 Writing a number bytes is easy here. However it gets tricky when the receiver doesn't know how many bytes to expect.
       For example when transmitting a file or a complex data structur such as a string.
-Sends and reads multiple byte arrays(chunks) of completly variable length over a single established connection.
-      Apart from that some very basic(and common) data types of fixed length are also supported by the protocol.
-      (byte, byte arrays of fixed length, int16(twos_compl), int32(twos_compl), int64(twos_compl), float32(IEEE-754), float64(IEEE-754))
+Sends and reads multiple byte arrays(chunks) of completly variable payloadLength over a single established connection.
+      Apart from that some very basic(and common) data types of fixed payloadLength are also supported by the protocol.
+      (byte, byte arrays of fixed payloadLength, int16(twos_compl), int32(twos_compl), int64(twos_compl), float32(IEEE-754), float64(IEEE-754))
            NOTE: Booleans are not supported since their implementation greatly differs between common languages.
 
 The idea is that after establishing a connection the client sends a "cause" byte, indicating what kind of complex "conversation" it would like to have.
@@ -54,8 +54,8 @@ An mcnp api has to support:
         - send_variable_chunk_part(uint8array)
            send_fixed_chunk_uint8array
         - read_variable_chunk() uint8array
-           length = read_fixed_int64
-           read_fixed(length)
+           payloadLength = read_fixed_int64
+           read_fixed(payloadLength)
 
     OPTIONALS and comfort functionality:
       - send_variable_array(uint8array)

@@ -371,6 +371,15 @@ public class BitHelper {
                 ((bytes[off+3] & 0xff)      );
     }
 
+	/**
+	 * Turns a byte string into it's representation as a float.
+	 * @param bytes a byte array exactly length 4
+	 * @return a double
+	 */
+	public static float getFloat32From(byte[] bytes, int off) {
+		return Float.intBitsToFloat(getInt32From(bytes, off));
+	}
+
 	public static long getIntFromNBytes(byte[] bytes, int offset, int len) {
 		long l = 0;
 		for(int i=0;i<len;i++) {
@@ -380,16 +389,6 @@ public class BitHelper {
 				l |= (bytes[offset + i] & 0xff) << (len - i - 1) * 8;
 		}
 		return l;
-	}
-	public static int getInt32FromNBytes(byte[] bytes, int offset) {
-		int val = 0;
-		for(int i=0;i<4;i++) {
-			if(i==0)
-				val |= (bytes[offset + i]) << (4 - i - 1) * 8;
-			else
-				val |= (bytes[offset + i] & 0xff) << (4 - i - 1) * 8;
-		}
-		return val;
 	}
 
 	public static long getUIntFromNBytes(byte[] b, int offset, int len) {
@@ -437,6 +436,9 @@ public class BitHelper {
      */
 	public static double getFloat64From(byte[] bytes) {
 		return Double.longBitsToDouble(getInt64From(bytes));
+	}
+	public static double getFloat64From(byte[] bytes, int off) {
+		return Double.longBitsToDouble(getIntFromNBytes(bytes, off, 8));
 	}
 
     /**

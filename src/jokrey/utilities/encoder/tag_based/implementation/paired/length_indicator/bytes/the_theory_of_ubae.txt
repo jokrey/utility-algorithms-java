@@ -40,7 +40,7 @@ An implementation of Litbe has to have the following methods:
 	tag_exists(string tag) boolean
 		jumps through the tags until it finds the one. then it returns true otherwise false
 	tag_length(string tag) i64
-		jumps through the tags until it finds the one. then it returns the length of that tag(possibly with a skip).
+		jumps through the tags until it finds the one. then it returns the payloadLength of that tag(possibly with a skip).
 		If the tag does not exist, then return -1.
 	get_entry(string tag) byte[]
 		jumps through the tags until it finds the one. then it returns the entry at that tag as a copied byte[].
@@ -61,7 +61,7 @@ An implementation of Litbe has to have the following methods:
 		appends tag as utf8 byte array and cont directly to the underlying libae system.
 			using li_encode_single
 	add_entry_from_stream(string tag, stream, stream_length)
-		appends tag as utf8 byte array and stream with stream length to underlying libae.
+		appends tag as utf8 byte array and stream with stream payloadLength to underlying libae.
 		using li_encode_single_stream
 	add_entry_nocheck(string tag, byte[] cont)
 		exactly as add_entry(string tag, byte[] cont), but does no call delete_entry_noreturn(tag)
