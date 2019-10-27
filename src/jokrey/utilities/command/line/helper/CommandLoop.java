@@ -46,8 +46,12 @@ public class CommandLoop implements Runnable, AutoCloseable {
             if (commandOptions.length==0)
                 System.out.println("Unknown command(\"" + commandId + "\")");
             else {
-                if(! execute(commandId, string_args, commandOptions) )
-                    System.out.println("Constraints check of command failed. Please type 'help " + commandId + "' for more information.");
+                try {
+                    if (!execute(commandId, string_args, commandOptions))
+                        System.out.println("Constraints check of command failed. Please type 'help " + commandId + "' for more information.");
+                } catch (Throwable t) {
+                    System.out.println("exception while executing "+commandId+" - "+t.getMessage());
+                }
             }
         }
         s.close();
