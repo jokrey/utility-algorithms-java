@@ -47,13 +47,16 @@ public class LFStack<E> implements Stack<E> {
             current=current.next;
             counter++;
         }
+        System.out.println(head.get()+" - counter = " + counter);
         return counter;
     }
     @Override public void println() {
-        System.out.println(head!=null ? head.toString() : "null");
+        System.out.println(head.get()!=null ? head.get().toString() : "null");
     }
 
-
+    @Override public void clear() {
+        head.set(null);
+    }
 
     @Override public void push(E e, long sleep_at_some_point) {
         Node<E> oldHead;

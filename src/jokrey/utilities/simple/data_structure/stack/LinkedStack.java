@@ -42,7 +42,9 @@ public class LinkedStack<E> implements Stack<E> {
         System.out.println(head!=null ? head.toString() : "null");
     }
 
-
+    @Override public void clear() {
+        head = null;
+    }
 
     @Override public void push(E e, long sleep_at_some_point) {
         sleep(sleep_at_some_point/2);
@@ -66,5 +68,11 @@ public class LinkedStack<E> implements Stack<E> {
     @Override public E peek(long sleep_at_some_point) {
         sleep(sleep_at_some_point);
         return head==null? null: head.val;
+    }
+
+    @Override public String toString() {
+        return "LinkedStack{" +
+                "head=" + head +
+                '}';
     }
 }

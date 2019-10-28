@@ -349,8 +349,13 @@ public class BitHelper {
      */
 	public static short getInt16From(byte[] bytes) {
 		if(bytes.length==2) {
-			return ByteBuffer.wrap(bytes).getShort();
+			return getInt16From(bytes, 0);
 		}throw new IllegalArgumentException("read error, n!=2");
+	}
+	public static short getInt16From(byte[] bytes, int off) {
+		return (short) (
+				((bytes[off] & 0xff) <<  8) |
+				((bytes[off+1] & 0xff)      ));
 	}
 
     /**
@@ -465,6 +470,11 @@ public class BitHelper {
         for(int n=0;n<4;n++)
             bytes[offset + n] = BitHelper.getByte(value, (4-1)-n);
     }
+
+	public static void writeInt16(byte[] bytes, int offset, short value) {
+		for(int n=0;n<2;n++)
+			bytes[offset + n] = BitHelper.getByte(value, (2-1)-n);
+	}
 
     /** @return bytes in hex format */
     public static String getHexString(byte[] bytes) {
