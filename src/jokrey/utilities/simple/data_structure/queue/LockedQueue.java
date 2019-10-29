@@ -46,6 +46,15 @@ public class LockedQueue<E> extends LinkedQueue<E> {
         }
     }
 
+    @Override public void clear() {
+        lock.lock();
+        try {
+            super.clear();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     @Override public void enqueue(E e, long sleep_at_some_point) {
         lock.lock();
         try {

@@ -55,8 +55,10 @@ public class LinkedQueue<E> implements Queue<E> {
         System.out.println(first !=null ? first.toString() : "null");
     }
 
-
-
+    @Override public void clear() {
+        first = null;
+        last = null;
+    }
 
     @Override public void enqueue(E e, long sleep_at_some_point) {
         final Node<E> oldLast = last;

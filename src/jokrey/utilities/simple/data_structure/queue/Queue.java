@@ -8,6 +8,7 @@ public interface Queue<E> {
     E dequeue();
     E peek();
     int size();
+    void clear();
 
 
     //debug or test functionality:
