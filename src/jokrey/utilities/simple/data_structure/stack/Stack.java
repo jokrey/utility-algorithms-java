@@ -8,6 +8,7 @@ public interface Stack<E> {
     E pop();
     E peek();
     int size();
+    default boolean isEmpty() {return size()==0;}
 
 
     //debug or test functionality:
