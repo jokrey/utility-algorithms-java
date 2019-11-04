@@ -7,6 +7,7 @@ import jokrey.utilities.encoder.as_union.lb.bytes.LBLIbae;
 import jokrey.utilities.encoder.as_union.lb.bytes.LBLIbae_cache;
 import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Random;
@@ -75,7 +76,7 @@ public class AsUnionEncoder_Test {
             b.append(", ");
         }
     }
-    @Test
+    @Test @Ignore
     public void testLBlie_RAM() {
         LBLIbae lie = new LBLIbae(new ByteArrayStorage());
         genericTest(lie, true);

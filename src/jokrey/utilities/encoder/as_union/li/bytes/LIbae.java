@@ -12,6 +12,7 @@ import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorag
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -184,6 +185,8 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
      * @return Length indicated indices. The range between those indices is the encoded, connected data.
      */
     public static long[] get_next_li_bounds(byte[] partialData, int partialDataOffset, long li_offset, long totalDataSize) {
+        if(partialDataOffset >= totalDataSize) return null; // added - tested, but potentially not sufficiently
+
         byte leading_li = partialData[partialDataOffset];
 
         long lengthIndicator_asInt = getIntFromByteArray(partialData, 1 + partialDataOffset, leading_li);
@@ -200,7 +203,7 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
     public static byte[] generateLI(long length) {
         byte li_byte_count = getLeadingLIFor(length);
         byte[] li_bytes = new byte[li_byte_count + 1];
-        li_bytes[0] = li_byte_count;//cast possible because it cannot be more than 8 anyways. - TODO this wastes 5 bit: 2^3 = 8 => 3 bit would be enough to encode the information...
+        li_bytes[0] = li_byte_count;//cast possible because it cannot be more than 8 anyways. - TODO this wastes 5 bit: 2^3 = 8, but 3 bit would be enough to encode the information...
         for(int n=1;n<li_bytes.length;n++)
             li_bytes[n] = BitHelper.getByte(length, (li_bytes.length-1)-n);
         return li_bytes;
