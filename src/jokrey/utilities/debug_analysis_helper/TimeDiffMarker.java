@@ -19,7 +19,7 @@ public class TimeDiffMarker {
 		return getDiffFor_as_string(DEFAULT_ID);
 	}
 	public static void setMark_d() {setMark(DEFAULT_ID);}
-	public static void println_setMark() {
+	public static void println_setMark_d() {
         println_d();
         setMark_d();}
 	public static void println_d(String s) {

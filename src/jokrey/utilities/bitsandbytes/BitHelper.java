@@ -1,9 +1,13 @@
 package jokrey.utilities.bitsandbytes;
 
+import jokrey.utilities.debug_analysis_helper.TimeDiffMarker;
+import org.junit.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Provides efficient helper functionality for some bit, byte and conversion operations.
@@ -550,4 +554,158 @@ public class BitHelper {
         l |= b[offset + 3] & 0xFF;
         return l;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	public static void rotateRightBy(byte[] array, int by) {
+		rotateRightBy(array, new byte[Math.min(Math.abs(by), array.length-Math.abs(by))], by);
+	}
+	public static void rotateRightBy(byte[] array, byte[] temp, int by) {
+		rotateRightBy(array, array.length, temp, by);
+	}
+	public static void rotateLeftBy(byte[] array, int by) {
+		rotateLeftBy(array, new byte[Math.min(Math.abs(by), array.length-Math.abs(by))], by);
+	}
+	public static void rotateLeftBy(byte[] array, byte[] temp, int by) {
+		rotateLeftBy(array, array.length, temp, by);
+	}
+	@SuppressWarnings("SuspiciousSystemArraycopy")
+	public static void rotateRightBy(Object array, int array_length, Object temp, int by) {
+//        rotateLeftBy(array, array_length-by); //TECHNICALLY THIS IS CORRECT; BUT REQUIRES EXTRA STACK AND tHiS iS hIgH pEfOrMaNcE jAvA
+		if(by < 0)
+			by= array_length + by;
+		if(array_length-by < by) {
+//            rotateLeftBy(array, temp, array_length-by); //TECHNICALLY THIS IS CORRECT; BUT REQUIRES EXTRA STACK AND tHiS iS hIgH pEfOrMaNcE jAvA
+			by = array_length - by;
+			if(temp == null) temp = new byte[by];
+			System.arraycopy(array, 0, temp, 0, by);
+			System.arraycopy(array, by, array, 0, array_length - by);
+			System.arraycopy(temp, 0, array, array_length - by, by);
+		} else if(by != 0) {
+			if(temp == null) temp = new byte[by];
+			System.arraycopy(array, array_length - by, temp, 0, by);
+			System.arraycopy(array, 0, array, by, array_length - by);
+			System.arraycopy(temp, 0, array, 0, by);
+		}
+	}
+	@SuppressWarnings("SuspiciousSystemArraycopy")
+	public static void rotateLeftBy(Object array, int array_length, Object temp, int by) {
+//        rotateRightBy(array, array_length-by); //TECHNICALLY THIS IS CORRECT; BUT REQUIRES EXTRA STACK AND tHiS iS hIgH pEfOrMaNcE jAvA
+		if(by < 0)
+			by= array_length + by;
+		if(array_length-by < by) {
+//            rotateRightBy(array, array_length-by); //TECHNICALLY THIS IS CORRECT; BUT REQUIRES EXTRA STACK AND tHiS iS hIgH pEfOrMaNcE jAvA
+			by = array_length-by;
+			if(temp == null) temp = new byte[by];
+			System.arraycopy(array, array_length - by, temp, 0, by);
+			System.arraycopy(array, 0, array, by, array_length - by);
+			System.arraycopy(temp, 0, array, 0, by);
+		} else if(by != 0) {
+			if(temp == null) temp = new byte[by];
+			System.arraycopy(array, 0, temp, 0, by);
+			System.arraycopy(array, by, array, 0, array_length - by);
+			System.arraycopy(temp, 0, array, array_length - by, by);
+		}
+	}
+
+
+
+
+
+	//For rotation the following algorithms also work - they have less space complexity, but perform quite terribly:
+	public static void shift_array(byte[] A, int n) {
+		int N = A.length;
+		n %= N;
+		if(n < 0)
+			n = N + n;
+		if(n!=0) {
+			int d = gcd(N, n);
+			for (int i = 0; i < d; i++) {
+				byte temp = A[i];
+				for (int j = i - n + N; j != i; j = (j - n + N) % N)
+					A[(j + n) % N] = A[j];
+				A[i + n] = temp;
+			}
+		}
+	}
+	private static int gcd(int a, int b) {
+		while(b != 0) {
+			int c = a;
+			a = b;
+			b = c % a;
+		}
+		return a;
+	}
+
+
+	public static void rotate(byte[] array, int n) {
+		if(n < 0) n = array.length + n;
+		reverse(array, 0, n);
+		reverse(array, n + 1, array.length-1);
+		reverse(array, 0, array.length-1);
+	}
+	private static void reverse(byte[] array, int start, int end) {
+		for (int i = start; i <= (start + end)/2; i++) {
+			swap(array, i, start + end - i);
+		}
+	}
+	private static void swap(byte[] array, int first, int second) {
+		byte temp = array[second];
+		array[second] = array[first];
+		array[first] = temp;
+	}
+
+	@Test
+	public void performanceComparisonRotationAlgorithms() {
+		int aSize = 1_000_0;
+		byte[] array = new byte[aSize];
+		ThreadLocalRandom.current().nextBytes(array);//technically the content does not matter - otherwise we'd have to recreate an array every run too
+
+		TimeDiffMarker.setMark("rotate left (array copy with cached temp)");
+		byte[] temp = new byte[aSize/2];
+		for(int i=-aSize;i<aSize;i++) {
+//            byte[] array = new byte[]{1,2,3,4,5,6};
+//            System.out.println("array = " + Arrays.toString(array));
+			BitHelper.rotateLeftBy(array, temp, i);
+//            System.out.println("array = " + Arrays.toString(array));
+		}
+		TimeDiffMarker.println("rotate left (array copy with cached temp)");
+		TimeDiffMarker.setMark("rotate left (array copy with new temp each time)");
+		for(int i=-aSize;i<aSize;i++) {
+//            byte[] array = new byte[]{1,2,3,4,5,6};
+//            System.out.println("array = " + Arrays.toString(array));
+			BitHelper.rotateLeftBy(array, i);
+//            System.out.println("array = " + Arrays.toString(array));
+		}
+		TimeDiffMarker.println("rotate left (array copy with new temp each time)");
+		TimeDiffMarker.setMark("rotate left (O(2n) reverse algorithm)");
+		for(int i=-aSize;i<aSize;i++) {
+//            byte[] array = new byte[]{1,2,3,4,5,6};
+//            System.out.println("array = " + Arrays.toString(array));
+			BitHelper.rotate(array, i);
+//            System.out.println("array = " + Arrays.toString(array));
+		}
+		TimeDiffMarker.println("rotate left (O(2n) reverse algorithm)");
+		TimeDiffMarker.setMark("rotate array O(n) gdc algorithm");
+		for(int i=-aSize;i<aSize;i++) {
+//            byte[] array = new byte[]{1,2,3,4,5,6};
+//            System.out.println("array = " + Arrays.toString(array));
+			BitHelper.shift_array(array, i);
+//            System.out.println("array = " + Arrays.toString(array));
+		}
+		TimeDiffMarker.println("rotate array O(n) gdc algorithm");
+	}
 }
