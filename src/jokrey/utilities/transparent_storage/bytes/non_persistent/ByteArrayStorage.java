@@ -44,8 +44,8 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         }
     }
 
-    private byte[] content;
-    private int size; //always smaller or equal to content.length
+    public byte[] content;
+    public int size; //always smaller or equal to content.length
 
     private final boolean memory_over_performance;
 
@@ -63,7 +63,8 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     }
 
     @Override public void close() {
-        content =null;size=-1;}
+        content =null;size=-1;
+    }
 
     /**
      * Preallocates initial_capacity bytes in internal byte content.
@@ -98,8 +99,8 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     public ByteArrayStorage(boolean memory_over_performance, byte[] initial_buf, int initial_size) {
         this.memory_over_performance = memory_over_performance;
         setContent(initial_buf);
-        this.size=initial_size;
-        if(initial_size> content.length)
+        this.size = initial_size;
+        if(initial_size > content.length)
             throw new IndexOutOfBoundsException("initial_size > content.length");
     }
 
@@ -205,29 +206,48 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     }
 
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
-        return new ByteArrayInputStream(sub(start, end));
+        return new ByteArrayInputStream(sub(start, end)); //todo - custom stream, this is rather overkill and problematic for end >>> start
     }
 
     @Override public InputStream stream() {
         return new ByteArrayInputStream(content);
     }
 
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        System.arraycopy(content, (int) start, b, off, len);
+        return this;
+    }
+
+    @Override public byte getByte(long index) {
+        return content[(int) index];
+    }
+
     @Override public long contentSize() {
         return size;
     }
 
+    @Override public boolean isEmpty() {
+        return size == 0;
+    }
+
     @Override public int hashCode() {
-        return Arrays.hashCode(getContent());
+        return Arrays.hashCode(content);
     }
 
 
     @Override public boolean equals(Object o) {
-        return o instanceof ByteArrayStorage && Arrays.equals(getContent(), ((ByteArrayStorage) o).getContent());
+        if(! (o instanceof ByteArrayStorage)) return false;
+        ByteArrayStorage that = ((ByteArrayStorage) o);
+        if(size != that.size) return false;
+        for(int i=0;i<size;i++)
+            if(content[i] != that.content[i])
+                return false;
+        return true;
     }
 
 
     @Override public synchronized String toString() {
-        return "[ByteArrayStorage: l=" + size + ", cont=" + Arrays.toString(getContent()) + "]";
+        return "[ByteArrayStorage: l=" + size + ", cont=" + Arrays.toString(content) + "]";
     }
 
 

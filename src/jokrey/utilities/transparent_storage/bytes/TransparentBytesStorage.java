@@ -52,6 +52,32 @@ public interface TransparentBytesStorage extends TransparentStorage<byte[]> {
      */
     InputStream stream();
 
+    /**
+     * @param index an index IN BOUNDS (i.e. >=0 && < contentSize())
+     * @return the byte at the specified index - if multiple bytes are required use {@link #sub(long, long)}
+     */
+    byte getByte(long index);
+
+    /**
+     * Copies len bytes into given byte array b from offset off. off + len must by smaller or equal to b.length
+     * @param b buffer to copy into
+     * @param off offset to copy from into, must be greater or equal to zero.
+     * @param len number of bytes to copy
+     * @return this
+     */
+    default TransparentBytesStorage copyInto(byte[] b, int off, int len) {
+        return copyInto(0, b, off, len);
+    }
+
+    /**
+     * Copies len bytes into given byte array b from offset off. off + len must by smaller or equal to b.length
+     * The bytes copied originate at given index start
+     * @param b buffer to copy into
+     * @param off offset to copy from into, must be greater or equal to zero.
+     * @param len number of bytes to copy
+     * @return this
+     */
+    TransparentBytesStorage copyInto(long start, byte[] b, int off, int len);
 
     //overridden so that it returns a TransparentBytesStorage and it's methods are available in the builder pattern.
     TransparentBytesStorage delete(long start, long end) throws StorageSystemException;

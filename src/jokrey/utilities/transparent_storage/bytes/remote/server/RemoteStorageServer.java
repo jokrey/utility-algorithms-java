@@ -97,6 +97,7 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     }
 
 
+
     //to hide it from outside access
     private class RemoteStorageServer_ConnectionHandler implements ConnectionHandler<ConnectionState> {
         private AtomicLong global_connection_counter = new AtomicLong(0);
@@ -254,11 +255,15 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     @Override public synchronized InputStream substream(long start, long end) throws StorageSystemException {
         return delegation.substream(start, end);
     }
-
     @Override public InputStream stream() {
         return substream(0, contentSize());
     }
-
+    @Override public byte getByte(long index) {
+        return delegation.getByte(index);
+    }
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        return delegation.copyInto(start, b, off, len);
+    }
     @Override public synchronized RemoteStorageServer append(byte[] val) throws StorageSystemException {
         delegation.append(val);
         return this;
@@ -268,6 +273,9 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     }
     @Override public synchronized long contentSize() {
         return delegation.contentSize();
+    }
+    @Override public boolean isEmpty() {
+        return contentSize()==0;
     }
     @Override public synchronized void clear() {
         delegation.clear();

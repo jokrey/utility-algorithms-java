@@ -173,7 +173,7 @@ public class FileStorage implements TransparentBytesStorage {
 
     @Override public byte[] sub(long start, long end_given) throws StorageSystemException {
         long size = contentSize();
-        long end = end_given > size ? size : end_given; //to satisfy interface doc condition
+        long end = Math.min(end_given, size); //to satisfy interface doc condition
         try {
             long len = end - start;
             if (len > 0) {
@@ -199,7 +199,7 @@ public class FileStorage implements TransparentBytesStorage {
      */
     @Override public InputStream substream(long start, long end_given) throws StorageSystemException {
         long size = contentSize();
-        long end = end_given > size ? size : end_given; //to satisfy interface doc condition
+        long end = Math.min(end_given, size); //to satisfy interface doc condition
         try {
             long len = end - start;
             if(start<0) {
@@ -259,6 +259,32 @@ public class FileStorage implements TransparentBytesStorage {
         }
     }
 
+    @Override public byte getByte(long index) {
+        try {
+            synchronized (raf) {
+                raf.seek(index);
+                return raf.readByte();
+            }
+        } catch (IOException e) {
+            throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
+        }
+    }
+
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        try {
+            if (len > 0) {
+                synchronized (raf) {
+                    raf.seek(start);
+                    raf.read(b, off, len);
+                }
+            } else if(len<0)
+                throw new StorageSystemException("Cannot create sub of less than 0 bytes.");
+        } catch (IOException e) {
+            throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
+        }
+        return this;
+    }
+
 
     @Override public long contentSize() throws StorageSystemException {
         try {
@@ -268,6 +294,10 @@ public class FileStorage implements TransparentBytesStorage {
         } catch (IOException e) {
             throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
         }
+    }
+
+    @Override public boolean isEmpty() {
+        return contentSize() == 0;
     }
 
     //would be too slow to actually use, so prohibit usage

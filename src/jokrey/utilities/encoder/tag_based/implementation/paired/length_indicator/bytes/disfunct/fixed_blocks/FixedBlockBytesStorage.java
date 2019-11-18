@@ -88,6 +88,9 @@ public class FixedBlockBytesStorage implements TransparentBytesStorage {
         return getRealLength();
     }
 
+    @Override public boolean isEmpty() {
+        return contentSize() == 0;
+    }
 
     //just relay, checking for validity is too costly for read
     @Override public byte[] sub(long start, long end) {
@@ -103,10 +106,15 @@ public class FixedBlockBytesStorage implements TransparentBytesStorage {
     @Override public void close() throws Exception {
         underlying.close();
     }
-
     @Override public InputStream stream() {
 //        throw new UnsupportedOperationException();
         return data.stream();
+    }
+    @Override public byte getByte(long index) {
+        return data.getByte(index);
+    }
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        return data.copyInto(start, b, off, len);
     }
     @Override public void setContent(byte[] content) {
 //        throw new UnsupportedOperationException();

@@ -66,6 +66,9 @@ public class StringStorageSystem implements TransparentStorage<String> {
         return content.length();
     }
 
+    @Override public boolean isEmpty() {
+        return contentSize() == 0;
+    }
 
     @Override public int hashCode() {
         return getContent().hashCode();

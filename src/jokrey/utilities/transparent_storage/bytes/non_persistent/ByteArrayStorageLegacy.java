@@ -165,10 +165,22 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
     }
 
 
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        System.arraycopy(buf, (int) start, b, off, len);
+        return this;
+    }
+
+    @Override public byte getByte(long index) {
+        return buf[(int) index];
+    }
+
     @Override public long contentSize() {
         return size();
     }
 
+    @Override public boolean isEmpty() {
+        return contentSize() == 0;
+    }
 
     @Override public int hashCode() {
         return Arrays.hashCode(getContent());

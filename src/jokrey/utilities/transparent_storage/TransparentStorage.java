@@ -101,6 +101,9 @@ public interface TransparentStorage<SF> extends AutoCloseable {
      */
     long contentSize();
 
+    /** Whether this storage can be considered to contain data. Whether contentSize()==0. */
+    boolean isEmpty();
+
 
     //standard is required
 

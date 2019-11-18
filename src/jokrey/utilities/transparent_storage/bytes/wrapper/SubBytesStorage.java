@@ -14,13 +14,13 @@ import java.io.InputStream;
  * @author jokrey
  */
 public class SubBytesStorage implements TransparentBytesStorage {
-    private final long start;
-    private final long end;
+    public long start;
+    private long end;
     private TransparentBytesStorage delegate;
 
     public SubBytesStorage(long start, long end, TransparentBytesStorage delegate) {
-        if(end <= start || start < 0)
-            throw new IndexOutOfBoundsException();
+        if(end < start || start < 0)
+            throw new IndexOutOfBoundsException("start("+start+"), end("+end+")");
         this.start = start;
         this.end = end;
         this.delegate = delegate;
@@ -72,6 +72,10 @@ public class SubBytesStorage implements TransparentBytesStorage {
         return Math.min(end, delegate.contentSize()) - start;
     }
 
+    @Override public boolean isEmpty() {
+        return start >= Math.min(end, delegate.contentSize());
+    }
+
     @Override public void setContent(byte[] content) {
         set(start, content);
     }
@@ -80,7 +84,13 @@ public class SubBytesStorage implements TransparentBytesStorage {
         return delegate.sub(start, Math.min(end, delegate.contentSize()));
     }
 
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        return delegate.copyInto(this.start + start, b, off, len);
+    }
 
+    public void startIndexAdd(int by) {
+        start+=by;
+    }
 
 
     @Override public void clear() {
@@ -94,5 +104,13 @@ public class SubBytesStorage implements TransparentBytesStorage {
      */
     @Override public void close() {
         delegate=null;
+    }
+
+    public byte getFirst() {
+        return delegate.getByte(start);
+    }
+
+    @Override public byte getByte(long index) {
+        return delegate.getByte(start + index);
     }
 }

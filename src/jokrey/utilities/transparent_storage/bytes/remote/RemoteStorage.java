@@ -218,11 +218,23 @@ public class RemoteStorage implements TransparentBytesStorage {
             throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
         }
     }
-
     @Override public InputStream stream() {
         return substream(0, contentSize());
     }
-
+    @Override public byte getByte(long index) {
+        return sub(index, index+1)[0];
+    }
+    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+        InputStream sub = substream(start, start+len);
+        try {
+            int read = sub.read(b, off, len);
+            if(read != len)
+                throw new StorageSystemException("read wrong number of bytes(read="+read+", expected="+len+").");
+        } catch (IOException e) {
+            throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
+        }
+        return this;
+    }
     @Override public long contentSize() throws StorageSystemException {
         try {
             synchronized (client) {
@@ -233,5 +245,9 @@ public class RemoteStorage implements TransparentBytesStorage {
         } catch (IOException e) {
             throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
         }
+    }
+
+    @Override public boolean isEmpty() {
+        return contentSize() == 0;
     }
 }
