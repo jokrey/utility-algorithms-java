@@ -112,12 +112,12 @@ public class RemoteStorage implements TransparentBytesStorage {
         }
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
         try {
             synchronized (client) {
                 client.send_cause(RemoteStorageMCNPCauses.SET);
                 client.send_int64(start);
-                client.send_variable(Arrays.copyOfRange(part, off, off_end));
+                client.send_variable(Arrays.copyOfRange(part, off, len));
                 client.flush();
                 if (client.receive_byte() == RemoteStorageMCNPCauses.NO_ERROR) //supposed to indicate that no error occurred
                     return this;
@@ -130,7 +130,7 @@ public class RemoteStorage implements TransparentBytesStorage {
     }
 
     @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
-        return set(start, part, off, part.length);
+        return set(start, part, off, part.length-off);
     }
 
     @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {

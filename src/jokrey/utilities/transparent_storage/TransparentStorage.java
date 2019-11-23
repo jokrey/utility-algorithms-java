@@ -56,13 +56,17 @@ public interface TransparentStorage<SF> extends AutoCloseable {
 
     /**
      * Sets the content from start to start+part.length with part,
-     * appending if required.
+     * appending if required (i.e. if start is out of bounds the method will append the underlying to at least contain start+len indices).
+     * size = max(size, start+len)
+     *
+     * if len > part.length => len = part.length (but size still = start+len)
+     *
      * @param start start index, has to be within bounds
      * @param part not null
      * @param off
-     * @param off_end
+     * @param len
      */
-    TransparentStorage<SF> set(long start, SF part, int off, int off_end);
+    TransparentStorage<SF> set(long start, SF part, int off, int len);
 
     /**
      * Sets the content from start to start+part.length with part,

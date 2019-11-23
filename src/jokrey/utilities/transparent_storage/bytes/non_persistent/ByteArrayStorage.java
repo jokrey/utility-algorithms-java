@@ -183,17 +183,13 @@ public class ByteArrayStorage implements TransparentBytesStorage {
             throw new StorageSystemException("Cannot create a byte array with less than 0 bytes. - sub: start="+start+", end="+end);
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
-        if(start > size) throw new StorageSystemException("Too large, start("+start+") > size("+size+")");
-        grow_to_at_least(start + (off_end-off));
-//        System.out.println("part.length: "+part.length);
-//        System.out.println("off: "+off);
-//        System.out.println("off_end: "+off_end);
-//        System.out.println("content.length: "+content.length);
-//        System.out.println("start: "+start);
-//        System.out.println("Math.min(part.length-off, off_end-off): "+Math.min(part.length-off, off_end-off));
-        System.arraycopy(part, off, content, (int) start, Math.min(part.length-off, off_end-off));
-        size = (int) Math.max(start+(off_end-off), contentSize());
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
+//        if(start > size) throw new StorageSystemException("Too large, start("+start+") > size("+size+")"); //would limit appending...
+        long requiredSizeOfAttachedPart = start+len;
+        grow_to_at_least(requiredSizeOfAttachedPart);
+        System.arraycopy(part, off, content, (int) start, Math.min(part.length, len));
+        if(requiredSizeOfAttachedPart > size)
+            size= (int) requiredSizeOfAttachedPart;
         return this;
     }
 

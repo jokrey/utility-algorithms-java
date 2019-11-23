@@ -151,15 +151,15 @@ public class FileStorage implements TransparentBytesStorage {
     }
 
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
-        long size = contentSize();
-        if(start > size)
-            throw new StorageSystemException("IndexOutOfBounds, start > size");
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
+//        long size = contentSize();
+//        if(start > size)
+//            throw new StorageSystemException("IndexOutOfBounds, start > size");
         try {
             synchronized (raf) {
-                raf.setLength(Math.max(start + (off_end-off), contentSize())); //pre ensure length met
+                raf.setLength(Math.max(start + (len -off), contentSize())); //pre ensure length met
                 raf.seek(start);
-                raf.write(part, off,  Math.min(part.length-off, off_end-off));
+                raf.write(part, off,  Math.min(part.length-off, len -off));
             }
         } catch (IOException ex) {
             throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+")");

@@ -49,14 +49,14 @@ public class StringStorageSystem implements TransparentStorage<String> {
         return content.substring((int) start, (int) end);
     }
 
-    @Override public StringStorageSystem set(long start, String part, int off, int off_end) {
+    @Override public StringStorageSystem set(long start, String part, int off, int len) {
         content.delete((int)start, (int) (start+part.length()<contentSize()? start+part.length():contentSize()));
-        content.insert((int) start, part, off, off_end);
+        content.insert((int) start, part, off, len);
         return this;
     }
 
     @Override public StringStorageSystem set(long start, String part, int off) {
-        return set(start, part, off, part.length());
+        return set(start, part, off, part.length()-off);
     }
     @Override public StringStorageSystem set(long start, String part) {
         return set(start, part, 0);

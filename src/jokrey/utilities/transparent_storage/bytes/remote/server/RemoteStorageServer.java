@@ -290,8 +290,8 @@ public class RemoteStorageServer implements TransparentBytesStorage {
         delegation.delete(start, end);
         return this;
     }
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
-        delegation.set(start, part, off, off_end);
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
+        delegation.set(start, part, off, len);
         return this;
     }
     @Override public synchronized RemoteStorageServer set(long start, byte[] part, int off) throws StorageSystemException {

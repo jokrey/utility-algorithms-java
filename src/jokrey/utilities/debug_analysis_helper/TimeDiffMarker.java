@@ -13,7 +13,7 @@ public class TimeDiffMarker {
 	private static final HashMap<String, Long> marks = new HashMap<>();
 
 	public static void println_d() {
-        System.out.println(getDiffFor_in_seconds(DEFAULT_ID) + "s");
+        System.out.println("took: "+getDiffFor_in_seconds(DEFAULT_ID) + "s");
 	}
 	public static String getDiffFor_as_string_d() {
 		return getDiffFor_as_string(DEFAULT_ID);
@@ -21,7 +21,8 @@ public class TimeDiffMarker {
 	public static void setMark_d() {setMark(DEFAULT_ID);}
 	public static void println_setMark_d() {
         println_d();
-        setMark_d();}
+        setMark_d();
+	}
 	public static void println_d(String s) {
         System.out.println(s+" took: "+getDiffFor_as_string(DEFAULT_ID) + "s");
 	}

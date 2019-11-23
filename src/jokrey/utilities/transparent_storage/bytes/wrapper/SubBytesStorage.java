@@ -35,17 +35,17 @@ public class SubBytesStorage implements TransparentBytesStorage {
     }
 
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException {
+    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
         long delegate_size = delegate.contentSize();
         if(delegate_size + part.length <= end) {
-            delegate.set(this.start+start, part, off, off_end);
+            delegate.set(this.start+start, part, off, len);
             return this;
         }
         throw new IndexOutOfBoundsException("Doesn't fit by "+((delegate_size+part.length)-end)+" bytes");
     }
 
     @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
-        return set(start, part, off, part.length);
+        return set(start, part, off, part.length-off);
     }
 
     @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {

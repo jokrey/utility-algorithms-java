@@ -81,7 +81,7 @@ public interface TransparentBytesStorage extends TransparentStorage<byte[]> {
 
     //overridden so that it returns a TransparentBytesStorage and it's methods are available in the builder pattern.
     TransparentBytesStorage delete(long start, long end) throws StorageSystemException;
-    TransparentBytesStorage set(long start, byte[] part, int off, int off_end) throws StorageSystemException;
+    TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException;
     TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException;
     default TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
         return set(start, part, 0);
