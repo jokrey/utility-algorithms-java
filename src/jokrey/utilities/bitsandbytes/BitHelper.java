@@ -470,6 +470,10 @@ public class BitHelper {
         }
     }
 
+	public static void writeInt64(byte[] bytes, int offset, long value) {
+		for(int n=0;n<8;n++)
+			bytes[offset + n] = BitHelper.getByte(value, (8-1)-n);
+	}
     public static void writeInt32(byte[] bytes, int offset, int value) {
         for(int n=0;n<4;n++)
             bytes[offset + n] = BitHelper.getByte(value, (4-1)-n);
@@ -668,7 +672,8 @@ public class BitHelper {
 		array[first] = temp;
 	}
 
-	@Test
+
+    @Test
 	public void performanceComparisonRotationAlgorithms() {
 		int aSize = 1_000_0;
 		byte[] array = new byte[aSize];

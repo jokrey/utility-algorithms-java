@@ -4,6 +4,7 @@ import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * Offers a view into a specific part of the given, underlying storage.
@@ -15,7 +16,7 @@ import java.io.InputStream;
  */
 public class SubBytesStorage implements TransparentBytesStorage {
     public long start;
-    private long end;
+    public long end;
     private TransparentBytesStorage delegate;
 
     public SubBytesStorage(long start, long end, TransparentBytesStorage delegate) {
@@ -24,6 +25,10 @@ public class SubBytesStorage implements TransparentBytesStorage {
         this.start = start;
         this.end = end;
         this.delegate = delegate;
+    }
+
+    public long end() {
+        return Math.min(end, delegate.contentSize());
     }
 
     @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {
@@ -112,5 +117,25 @@ public class SubBytesStorage implements TransparentBytesStorage {
 
     @Override public byte getByte(long index) {
         return delegate.getByte(start + index);
+    }
+
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SubBytesStorage that = (SubBytesStorage) o;
+        return start == that.start &&
+                end == that.end &&
+                delegate == that.delegate;
+    }
+    @Override public int hashCode() {
+        return Objects.hash(start, end, System.identityHashCode(delegate));
+    }
+
+    @Override public String toString() {
+        return "SubBytesStorage{" +
+                "start=" + start +
+                ", end=" + end +
+                ", delegate.size=" + delegate.contentSize() +
+                '}';
     }
 }

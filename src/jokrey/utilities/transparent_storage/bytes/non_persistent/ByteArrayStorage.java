@@ -101,7 +101,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         setContent(initial_buf);
         this.size = initial_size;
         if(initial_size > content.length)
-            throw new IndexOutOfBoundsException("initial_size > content.length");
+            throw new IndexOutOfBoundsException("initial_size("+initial_size+") > content.length("+content.length+")");
     }
 
 
@@ -185,11 +185,12 @@ public class ByteArrayStorage implements TransparentBytesStorage {
 
     @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
 //        if(start > size) throw new StorageSystemException("Too large, start("+start+") > size("+size+")"); //would limit appending...
+//        System.out.println("set - start = " + start + ", part.length = " + part.length + ", off = " + off + ", len = " + len);
         long requiredSizeOfAttachedPart = start+len;
         grow_to_at_least(requiredSizeOfAttachedPart);
         System.arraycopy(part, off, content, (int) start, Math.min(part.length, len));
         if(requiredSizeOfAttachedPart > size)
-            size= (int) requiredSizeOfAttachedPart;
+            size = (int) requiredSizeOfAttachedPart;
         return this;
     }
 
@@ -227,10 +228,11 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     }
 
     @Override public int hashCode() {
-        return Arrays.hashCode(content);
+        int result = Integer.hashCode(size);
+        for (byte element : content)
+            result = 31 * result + element;
+        return result;
     }
-
-
     @Override public boolean equals(Object o) {
         if(! (o instanceof ByteArrayStorage)) return false;
         ByteArrayStorage that = ((ByteArrayStorage) o);

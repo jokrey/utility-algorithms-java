@@ -47,7 +47,7 @@ public class LFStack<E> implements Stack<E> {
             current=current.next;
             counter++;
         }
-        System.out.println(head.get()+" - counter = " + counter);
+//        System.out.println(head.get()+" - counter = " + counter);
         return counter;
     }
     @Override public void println() {
