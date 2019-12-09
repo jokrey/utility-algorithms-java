@@ -40,6 +40,10 @@ public class SubBytesStorage implements TransparentBytesStorage {
     }
 
 
+    public SubBytesStorage appendFrom(long start, byte[] part, int off, int len) throws StorageSystemException {
+        delegate.set(this.start+start, part, off, len);
+        return this;
+    }
     @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
         long delegate_size = delegate.contentSize();
         if(delegate_size + part.length <= end) {

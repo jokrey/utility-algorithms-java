@@ -125,6 +125,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     @Override public ByteArrayStorage delete(long start, long end) throws StorageSystemException {
         int len = (int) (end - start);
         if (len > 0) {
+            System.err.println("contentSize: "+contentSize());
             System.arraycopy(content, (int) start + len, content, (int) start, (int) (this.size - end));  //override delete section with rest of array
             size -= len;
 
@@ -156,12 +157,17 @@ public class ByteArrayStorage implements TransparentBytesStorage {
             while (total_read < promised_content_length && (nRead = content.read(is_buffer, 0, Math.min(is_buffer.length, promised_content_length-total_read))) != -1) {
                 System.arraycopy(is_buffer, 0, this.content,  start+total_read, nRead);
 
+//                System.err.println("nRead: "+nRead);
+
                 total_read += nRead;
             }
             content.close();
 
+            System.err.println("total_read = " + total_read);
+            System.err.println("promised_content_length = " + promised_content_length);
+
             if (total_read < promised_content_length) {
-                throw new StorageSystemException("The provided stream failed to deliver the promised number of bytes");
+                throw new StorageSystemException("The provided stream failed to deliver the promised number of bytes - total_read="+total_read+", promised="+promised_content_length);
             }
         } catch (IOException ex) {
             throw new StorageSystemException("IO Exception thrown by provided InputStream(" + ex.getMessage() + ").");
@@ -266,28 +272,31 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     }
 
     private void grow_to_at_least(long at_least) {
-        if(at_least <= content.length) return;
-        if(at_least + content.length > Integer.MAX_VALUE) //overflow right away
+        content = grow_to_at_least(content, size, at_least, memory_over_performance);
+    }
+    public static byte[] grow_to_at_least(byte[] orig, int orig_len, long at_least, boolean memory_over_performance) {
+        if(at_least <= orig.length) return orig;
+        if(at_least + orig.length > Integer.MAX_VALUE) //overflow right away
             throw new OutOfMemoryError();
 
         if(memory_over_performance) {//yeah, but lets still not do precise allocation. That'd be insane
-            if(content.length < assumed_page_size && at_least < assumed_page_size) {
+            if(orig.length < assumed_page_size && at_least < assumed_page_size) {
                 int next_power_of_two = getNextPowerOfTwo(at_least);
                 if(next_power_of_two > assumed_page_size) //unlikely, but still nice to have...
-                    resize_to_next_bigger_page_size(at_least);
+                    return resize_to_next_bigger_page_size(orig, orig_len, at_least);
                 else
-                    resize_to(next_power_of_two);
+                    return resize_to(orig, orig_len, next_power_of_two);
             } else
-                resize_to_next_bigger_page_size(at_least);
+                return resize_to_next_bigger_page_size(orig, orig_len, at_least);
         } else {
             //arbitrary/heuristic numbers
             final int min_allocated_memory = 512;
             final int max_amount_of_pages_over_allocated = 10000;
 
-            long bytes_currently_under_allocated = at_least - content.length;
+            long bytes_currently_under_allocated = at_least - orig.length;
             //min amount of memory allocated - unlikely that smaller than page size, but still nice to have...
             long new_buffer_length_initial_proposal = Math.max(at_least + bytes_currently_under_allocated, //overallocate at least twice what we would have needed
-                                                            Math.max(min_allocated_memory, content.length*2L));
+                                                            Math.max(min_allocated_memory, orig.length*2L));
             long new_buffer_length = get_next_bigger_page_size(new_buffer_length_initial_proposal);
             if(new_buffer_length > Integer.MAX_VALUE) {
                 new_buffer_length = get_next_bigger_page_size(at_least);
@@ -313,31 +322,35 @@ public class ByteArrayStorage implements TransparentBytesStorage {
 //                System.out.println("Resized - bytes over allocated: " + (new_buffer_length - at_least));
 //                System.out.println();
 //            }
-            resize_to((int) new_buffer_length);
+            return resize_to(orig, orig_len, (int) new_buffer_length);
         }
     }
 
-    private int getNextPowerOfTwo(long from) {
+    private static int getNextPowerOfTwo(long from) {
         return (int) Math.pow(2, Math.ceil(Math.log(from)/Math.log(2)));
     }
 
     private void resize_to_next_bigger_page_size(long from) {
+        content = resize_to_next_bigger_page_size(content, size, from);
+    }
+    public static byte[] resize_to_next_bigger_page_size(byte[] orig, int orig_len, long from) {
         // Thanks to the magic of integer division this is NOT the same as: "at_least + pageSize"  (which would be wrong)
         long new_size = get_next_bigger_page_size(from);
         if(new_size > Integer.MAX_VALUE)
             throw new OutOfMemoryError();
         else
-            resize_to((int) get_next_bigger_page_size(from));
+            return resize_to(orig, orig_len, (int) get_next_bigger_page_size(from));
     }
-    private long get_next_bigger_page_size(long from) {
+    private static long get_next_bigger_page_size(long from) {
         return assumed_page_size*((from/assumed_page_size) + 1);
     }
-    private void resize_to(int new_raw_buffer_length) {
-        if(new_raw_buffer_length != content.length) { // avoid useless copy operation
+    public static byte[] resize_to(byte[] orig, int orig_len, int new_raw_buffer_length) {
+        if(new_raw_buffer_length != orig.length) { // avoid useless copy operation
             byte[] temp = new byte[new_raw_buffer_length];
-            System.arraycopy(content, 0, temp, 0, size);
-            content = temp;
+            System.arraycopy(orig, 0, temp, 0, orig_len);
+            return temp;
         }
+        return orig;
     }
 
 
