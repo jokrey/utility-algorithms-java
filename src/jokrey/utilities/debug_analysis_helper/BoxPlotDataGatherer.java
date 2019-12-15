@@ -17,12 +17,20 @@ public class BoxPlotDataGatherer {
         stored_calls.get(call_name).add(new_dif);
     }
     public static void print_all() {
+        print_all(false);
+    }
+    public static void print_all(boolean removeFirst) {
         System.out.println("=== Printing ------- Calls ===");
         for(Map.Entry<String, ArrayList<Long>> entry:stored_calls.entrySet()) {
             StringBuilder build = new StringBuilder();
-            for(Long l:entry.getValue())
-                build.append(String.format("%.7f",(l / 1e9))).append(" \\\\ ");
-            System.out.println(entry.getKey()+"("+entry.getValue().size()+") - "+build.toString());
+            for(Long l:entry.getValue()) {
+                if(removeFirst) {
+                    removeFirst = false;
+                    continue;
+                }
+                build.append(String.format("%.7f", (l / 1e9))).append(" \\\\ ");
+            }
+            System.out.println(entry.getKey()+"("+entry.getValue().size()+")\n"+build.toString());
         }
         System.out.println("=== End End EndEnd End End ===");
     }
