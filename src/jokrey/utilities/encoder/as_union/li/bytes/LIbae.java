@@ -216,6 +216,27 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
 //        System.arraycopy(li_bytes, 0, li_bytes_with_leading_li, 1, li_bytes.length);
 //        return li_bytes_with_leading_li;
     }
+    public static int writeLI(long length, byte[] target, int offset) {
+        byte li_byte_count = getLeadingLIFor(length);
+        int requiredSize = offset + li_byte_count + 1;
+        if(requiredSize >= target.length)
+            return -requiredSize;
+
+        target[offset] = li_byte_count;//cast possible because it cannot be more than 8 anyways. - TODO this wastes 5 bit: 2^3 = 8, but 3 bit would be enough to encode the information...
+        for(int n=offset+1; n < requiredSize; n++)
+            target[n] = BitHelper.getByte(length, (requiredSize-1)-n);
+        return li_byte_count + 1;
+    }
+    public static int writeLI(long length, ByteArrayStorage target, int offset) {
+        byte li_byte_count = getLeadingLIFor(length);
+        int requiredSize = offset + li_byte_count + 1;
+        target.grow_to_at_least(requiredSize);
+
+        target.set(offset, li_byte_count);//cast possible because it cannot be more than 8 anyways. - TODO this wastes 5 bit: 2^3 = 8, but 3 bit would be enough to encode the information...
+        for(int n=offset+1; n < requiredSize; n++)
+            target.set(n, BitHelper.getByte(length, (requiredSize-1)-n));
+        return li_byte_count + 1;
+    }
 
     //SECONDARY LIBAE FUNCTIONALITY
     public static long getIntFromByteArray(byte[] bytearr, int from, int len) {

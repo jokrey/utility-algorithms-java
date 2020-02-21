@@ -171,6 +171,19 @@ public class FileStorage implements TransparentBytesStorage {
         return set(start, part, 0, part.length);
     }
 
+    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+        try {
+            synchronized (raf) {
+                raf.setLength(Math.max(start + 1, contentSize())); //pre ensure length met
+                raf.seek(start);
+                raf.write(part);
+            }
+        } catch (IOException ex) {
+            throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+")");
+        }
+        return this;
+    }
+
     @Override public byte[] sub(long start, long end_given) throws StorageSystemException {
         long size = contentSize();
         long end = Math.min(end_given, size); //to satisfy interface doc condition

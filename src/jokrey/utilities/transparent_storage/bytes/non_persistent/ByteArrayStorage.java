@@ -208,6 +208,14 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         return set(start, part, 0);
     }
 
+    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+        long requiredSizeOfAttachedPart = start+1;
+        grow_to_at_least(requiredSizeOfAttachedPart);
+        content[(int) start] = part;
+        if(requiredSizeOfAttachedPart > size) size = (int) requiredSizeOfAttachedPart;
+        return this;
+    }
+
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         return new ByteArrayInputStream(sub(start, end)); //todo - custom stream, this is rather overkill and problematic for end >>> start
     }
@@ -271,7 +279,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         }
     }
 
-    private void grow_to_at_least(long at_least) {
+    public void grow_to_at_least(long at_least) {
         content = grow_to_at_least(content, size, at_least, memory_over_performance);
     }
     public static byte[] grow_to_at_least(byte[] orig, int orig_len, long at_least, boolean memory_over_performance) {

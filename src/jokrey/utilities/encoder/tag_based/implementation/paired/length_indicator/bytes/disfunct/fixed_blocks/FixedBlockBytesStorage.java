@@ -74,6 +74,10 @@ public class FixedBlockBytesStorage implements TransparentBytesStorage {
         return this;
     }
 
+    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+        return set(start, new byte[] {part});
+    }
+
     @Override public TransparentBytesStorage delete(long start, long end) throws StorageSystemException {
         setBlockRangeUnused(start, end);
 //        data.delete(start, end);

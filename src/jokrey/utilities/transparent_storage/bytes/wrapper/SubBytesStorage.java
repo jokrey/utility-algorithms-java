@@ -61,6 +61,10 @@ public class SubBytesStorage implements TransparentBytesStorage {
         return set(start, part, 0);
     }
 
+    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+        return set(start, new byte[] {part});
+    }
+
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         if(end<=this.end)
             return delegate.substream(start-this.start, end-this.start);

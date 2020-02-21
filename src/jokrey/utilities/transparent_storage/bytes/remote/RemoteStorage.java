@@ -133,6 +133,10 @@ public class RemoteStorage implements TransparentBytesStorage {
         return set(start, part, off, part.length-off);
     }
 
+    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+        return set(start, new byte[] {part});
+    }
+
     @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {
         try {
             synchronized (client) {

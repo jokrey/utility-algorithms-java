@@ -302,6 +302,10 @@ public class RemoteStorageServer implements TransparentBytesStorage {
         delegation.set(start, part);
         return this;
     }
+    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+        delegation.set(start, part);
+        return this;
+    }
     @Override public RemoteStorageServer set(long start, InputStream part, long part_length) throws StorageSystemException {
         delegation.set(start, part, part_length);
         return this;

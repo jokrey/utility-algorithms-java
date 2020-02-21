@@ -474,14 +474,25 @@ public class BitHelper {
 		for(int n=0;n<8;n++)
 			bytes[offset + n] = BitHelper.getByte(value, (8-1)-n);
 	}
-    public static void writeInt32(byte[] bytes, int offset, int value) {
-        for(int n=0;n<4;n++)
-            bytes[offset + n] = BitHelper.getByte(value, (4-1)-n);
-    }
-
+	public static void writeInt32(byte[] bytes, int offset, int value) {
+		for(int n=0;n<4;n++)
+			bytes[offset + n] = BitHelper.getByte(value, (4-1)-n);
+	}
 	public static void writeInt16(byte[] bytes, int offset, short value) {
 		for(int n=0;n<2;n++)
 			bytes[offset + n] = BitHelper.getByte(value, (2-1)-n);
+	}
+	public static void writeFloat32(byte[] bytes, int offset, float value) {
+		writeInt32(bytes, offset, Float.floatToRawIntBits(value));
+	}
+	public static void writeFloat64(byte[] bytes, int offset, double value) {
+		writeInt64(bytes, offset, Double.doubleToRawLongBits(value));
+	}
+	public static void writeFloat(byte[] bytes, int offset, float value) {
+		writeInt32(bytes, offset, Float.floatToRawIntBits(value));
+	}
+	public static void writeDouble(byte[] bytes, int offset, double value) {
+		writeInt64(bytes, offset, Double.doubleToRawLongBits(value));
 	}
 
     /** @return bytes in hex format */
