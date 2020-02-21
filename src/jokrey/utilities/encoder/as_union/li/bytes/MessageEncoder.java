@@ -53,49 +53,58 @@ public class MessageEncoder extends ByteArrayStorage {
     /** encodes a boolean at pointer position - reverse of {@link #nextBool()} */
     public void encode(boolean b) {
         grow_to_at_least(pointer+1);
-        content[pointer++] = (byte) (b?1:0);
+        set(pointer++, (byte) (b?1:0));
     }
     /** encodes a byte at pointer position - reverse of {@link #nextByte()} */
     public void encode(byte b) {
         grow_to_at_least(pointer+1);
-        content[pointer++] = b;
+        set(pointer++, b);
     }
     /** encodes a short at pointer position - reverse of {@link #nextShort()} */
     public void encode(short s) {
         grow_to_at_least(pointer+2);
         BitHelper.writeInt16(content, pointer, s);
         pointer+=2;
+        if(pointer>size) size=pointer;
     }
     /** encodes an int at pointer position - reverse of {@link #nextInt()} */
     public void encode(int i) {
         grow_to_at_least(pointer+4);
         BitHelper.writeInt32(content, pointer, i);
         pointer+=4;
+        if(pointer>size) size=pointer;
     }
     /** encodes a long at pointer position - reverse of {@link #nextLong()} */
     public void encode(long l) {
         grow_to_at_least(pointer+8);
         BitHelper.writeInt64(content, pointer, l);
         pointer+=8;
+        if(pointer>size) size=pointer;
     }
     /** encodes a float(32) at pointer position - reverse of {@link #nextFloat()} */
     public void encode(float f) {
         grow_to_at_least(pointer+4);
         BitHelper.writeFloat(content, pointer, f);
         pointer+=4;
+        if(pointer>size) size=pointer;
     }
     /** encodes a double/float64 at pointer position - reverse of {@link #nextDouble()} */
     public void encode(double d) {
         grow_to_at_least(pointer+8);
         BitHelper.writeDouble(content, pointer, d);
         pointer+=8;
+        if(pointer>size) size=pointer;
     }
     /** encodes a byte array of variable length at pointer position - reverse of {@link #nextVariable()} */
     public void encodeVariable(byte[] bs) {
+//        System.out.println("0 bs = " + Arrays.toString(bs));
+//        System.out.println("1 content = " + Arrays.toString(content));
         int liBytesWritten = LIbae.writeLI(bs.length, this, pointer);
         pointer+=liBytesWritten;
+//        System.out.println("2 content = " + Arrays.toString(content));
         set(pointer, bs);
         pointer+=bs.length;
+//        System.out.println("3 content = " + Arrays.toString(content));
     }
     public void encodeVariableString(String s) {
         encodeVariable(s.getBytes(StandardCharsets.UTF_8));
@@ -151,7 +160,7 @@ public class MessageEncoder extends ByteArrayStorage {
      *  reverse of {@link #encodeVariable(byte[])}
      * (same as, but more context efficient {@link LIbae#decode(LIPosition)}) */
     public byte[] nextVariable() {
-        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1);
+        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
         if(li_bounds == null) return null;
         pointer = (int) li_bounds[1];
         return Arrays.copyOfRange(content, (int) li_bounds[0], (int) li_bounds[1]);
@@ -160,7 +169,7 @@ public class MessageEncoder extends ByteArrayStorage {
      *  reverse of {@link #encodeVariableString(String)}
      * (same as, but more context efficient {@link LIbae#decode(LIPosition)}) */
     public String nextVariableString() {
-        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1);
+        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
         if(li_bounds == null) return null;
         pointer = (int) li_bounds[1];
         return new String(content, (int) li_bounds[0], (int) (li_bounds[1]-li_bounds[0]), StandardCharsets.UTF_8);
@@ -176,6 +185,7 @@ public class MessageEncoder extends ByteArrayStorage {
 
     public static MessageEncoder from(int offset, byte[] bytes) {
         byte[] content = new byte[offset+bytes.length];
+        System.arraycopy(bytes, 0, content, offset, bytes.length);
         return new MessageEncoder(true, content, offset, content.length);
     }
     public static MessageEncoder encodeAll(int offset, Object... os) {
