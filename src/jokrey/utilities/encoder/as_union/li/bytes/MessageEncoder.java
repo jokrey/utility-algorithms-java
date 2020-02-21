@@ -14,7 +14,7 @@ import java.util.Arrays;
  * @author jokrey
  */
 public class MessageEncoder extends ByteArrayStorage {
-    public final int offset;
+    public int offset;
 
     public MessageEncoder() { this(64); }
     public MessageEncoder(int initial_capacity) { this(false, new byte[initial_capacity], 0, 0); }
@@ -167,10 +167,15 @@ public class MessageEncoder extends ByteArrayStorage {
     }
 
 
+    /** moves all payload bytes (in range(offset, size)), by 'by' bytes and resets the offset = offset+by. */
+    public void shiftOffset(int by) {
+        grow_to_at_least(offset+size+by);
+        System.arraycopy(content, offset, content, offset+by, size-offset);
+        offset+=by;
+    }
 
     public static MessageEncoder from(int offset, byte[] bytes) {
         byte[] content = new byte[offset+bytes.length];
-        System.arraycopy(bytes, 0, content, offset, bytes.length);
         return new MessageEncoder(true, content, offset, content.length);
     }
     public static MessageEncoder encodeAll(int offset, Object... os) {
