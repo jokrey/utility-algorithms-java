@@ -167,7 +167,7 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
      *  reverse of {@link #encodeVariable(byte[])}
      * (same as, but more context efficient {@link LIbae#decode(LIPosition)}) */
     public byte[] nextVariable() {
-        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
+        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize());
         if(li_bounds == null) return null;
         pointer = (int) li_bounds[1];
         return sub(li_bounds[0], li_bounds[1]);
@@ -176,7 +176,7 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
      *  reverse of {@link #encodeVariableString(String)}
      * (same as, but more context efficient {@link LIbae#decode(LIPosition)}) */
     public String nextVariableString() {
-        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
+        long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize());
         if(li_bounds == null) return null;
         pointer = (int) li_bounds[1];
         return new String(content, (int) li_bounds[0], (int) (li_bounds[1]-li_bounds[0]), StandardCharsets.UTF_8);
@@ -187,6 +187,11 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
         int before = pointer;
         pointer+=n;
         return sub(before, pointer);
+    }
+
+    /** Whether anymore data can be decoded from the current pointer position. This can be as little as a single byte. */
+    public boolean hasAnyMore() {
+        return pointer < contentSize();
     }
 
 
@@ -203,9 +208,9 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
         return new MessageEncoder(true, content, offset, content.length);
     }
     public static MessageEncoder encodeAll(int offset, Object... os) {
-        return encodeAll(offset, offset + os.length*8, os);
+        return encodeAllWith(offset, offset + os.length*8, os);
     }
-    public static MessageEncoder encodeAll(int offset, int initial_capacity, Object... os) {
+    public static MessageEncoder encodeAllWith(int offset, int initial_capacity, Object... os) {
         MessageEncoder encoder = new MessageEncoder(true, new byte[initial_capacity], offset, 0);
         for(Object o : os) {
                  if(o instanceof Boolean) encoder.encode((Boolean) o);
@@ -266,7 +271,7 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
 
             @Override public void skip() {
                 try {
-                    long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
+                    long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize());
                     if(li_bounds == null)
                         throw new NoSuchElementException("No more elements available. (Concurrent delete access?)");
                     pointer = (int) li_bounds[1];

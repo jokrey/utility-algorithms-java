@@ -3,8 +3,9 @@ package jokrey.utilities.encoder.tag_based.tests;
 import jokrey.utilities.encoder.as_union.li.bytes.MessageEncoder;
 import org.junit.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 /**
  * @author jokrey
@@ -58,5 +59,35 @@ public class MessageEncoderTest {
             counter++;
         }
         assertEquals(12, counter);
+    }
+
+
+    @Test
+    public void fringeCaseTests() {
+        byte[] t1 = {};
+        byte[] t2 = {1,2};
+        MessageEncoder encoder = MessageEncoder.encodeAll(0, t1, t2);
+        encoder.resetPointer();
+
+        byte[] t1d = encoder.nextVariable();
+        byte[] t2d = encoder.nextVariable();
+        byte[] tnulld = encoder.nextVariable();
+
+        assertArrayEquals(t1, t1d);
+        assertArrayEquals(t2, t2d);
+        assertNull(tnulld);
+
+
+        byte[] t3 = {};
+        encoder = MessageEncoder.encodeAll(0, t1, t2, t3);
+        encoder.resetPointer();
+
+        t1d = encoder.nextVariable();
+        t2d = encoder.nextVariable();
+        byte[] t3d = encoder.nextVariable();
+
+        assertArrayEquals(t1, t1d);
+        assertArrayEquals(t2, t2d);
+        assertArrayEquals(t3, t3d);
     }
 }
