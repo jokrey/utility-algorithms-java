@@ -3,22 +3,30 @@ package jokrey.utilities.encoder.as_union.li.bytes;
 import jokrey.utilities.bitsandbytes.BitHelper;
 import jokrey.utilities.encoder.as_union.li.LIPosition;
 import jokrey.utilities.encoder.tag_based.implementation.paired.length_indicator.type.transformer.LITypeToBytesTransformer;
+import jokrey.utilities.simple.data_structure.ExtendedIterator;
+import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 /**
  * More efficient mix between LIBae and a type transformer.
  *
  * @author jokrey
  */
-public class MessageEncoder extends ByteArrayStorage {
+public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]> {
     public int offset;
 
     public MessageEncoder() { this(64); }
     public MessageEncoder(int initial_capacity) { this(false, new byte[initial_capacity], 0, 0); }
     public MessageEncoder(byte[] start_buf) { this(false, start_buf, 0, start_buf.length); }
+    public MessageEncoder(int offset, int initial_capacity) {
+        super(true, new byte[initial_capacity], 0);
+        this.offset = offset;
+        resetPointer();
+    }
     public MessageEncoder(boolean memory_over_performance, byte[] initial_buf, int offset, int initial_size) {
         super(memory_over_performance, initial_buf, initial_size);
         this.offset = offset;
@@ -43,7 +51,6 @@ public class MessageEncoder extends ByteArrayStorage {
     public String asString() {
         return new String(content, offset, size-offset, StandardCharsets.UTF_8);
     }
-
 
 
     private int pointer=-1;
@@ -97,17 +104,17 @@ public class MessageEncoder extends ByteArrayStorage {
     }
     /** encodes a byte array of variable length at pointer position - reverse of {@link #nextVariable()} */
     public void encodeVariable(byte[] bs) {
-//        System.out.println("0 bs = " + Arrays.toString(bs));
-//        System.out.println("1 content = " + Arrays.toString(content));
         int liBytesWritten = LIbae.writeLI(bs.length, this, pointer);
         pointer+=liBytesWritten;
-//        System.out.println("2 content = " + Arrays.toString(content));
         set(pointer, bs);
         pointer+=bs.length;
-//        System.out.println("3 content = " + Arrays.toString(content));
     }
     public void encodeVariableString(String s) {
         encodeVariable(s.getBytes(StandardCharsets.UTF_8));
+    }
+    public void encodeFixed(byte[] bs) {
+        set(pointer, bs);
+        pointer+=bs.length;
     }
 
     //DECODE HELPER
@@ -163,7 +170,7 @@ public class MessageEncoder extends ByteArrayStorage {
         long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
         if(li_bounds == null) return null;
         pointer = (int) li_bounds[1];
-        return Arrays.copyOfRange(content, (int) li_bounds[0], (int) li_bounds[1]);
+        return sub(li_bounds[0], li_bounds[1]);
     }
     /** decodes the next n payload bytes as a utf8 string - uses length indicator functionality to determine n
      *  reverse of {@link #encodeVariableString(String)}
@@ -173,6 +180,13 @@ public class MessageEncoder extends ByteArrayStorage {
         if(li_bounds == null) return null;
         pointer = (int) li_bounds[1];
         return new String(content, (int) li_bounds[0], (int) (li_bounds[1]-li_bounds[0]), StandardCharsets.UTF_8);
+    }
+    /** decodes the next n payload bytes as bytes
+     *  reverse of {@link #encodeFixed(byte[])} */
+    public byte[] nextFixed(int n) {
+        int before = pointer;
+        pointer+=n;
+        return sub(before, pointer);
     }
 
 
@@ -189,7 +203,10 @@ public class MessageEncoder extends ByteArrayStorage {
         return new MessageEncoder(true, content, offset, content.length);
     }
     public static MessageEncoder encodeAll(int offset, Object... os) {
-        MessageEncoder encoder = new MessageEncoder(true, new byte[offset + os.length*8], offset, 0);
+        return encodeAll(offset, offset + os.length*8, os);
+    }
+    public static MessageEncoder encodeAll(int offset, int initial_capacity, Object... os) {
+        MessageEncoder encoder = new MessageEncoder(true, new byte[initial_capacity], offset, 0);
         for(Object o : os) {
                  if(o instanceof Boolean) encoder.encode((Boolean) o);
             else if(o instanceof Byte) encoder.encode((Byte) o);
@@ -203,5 +220,64 @@ public class MessageEncoder extends ByteArrayStorage {
             else throw new IllegalArgumentException("unsupported class exception "+o.getClass());
         }
         return encoder;
+    }
+
+
+    /**
+     * Will reset the pointer and provide an iterable interface over the variably encoded data fields.
+     * The internal pointer used for the 'next' methods incremental decoding is used her as well.
+     * However the pointer is reset with each creation of the iterator(NOT THREAD SAFE).
+     * This allows decoding individual entries using 'next' methods, while iterating the variable ones.
+     * Use this feature with great care.
+     * Example: {
+     *     for(variableField : decoder) {
+     *         fixedLengthField_int = decoder.nextInt();
+     *         doSomething(variableField, fixedLengthField_int);
+     *     }
+     * }
+     * @return the iterator
+     */
+    @Override public ExtendedIterator<byte[]> iterator() {
+        resetPointer();
+        return new ExtendedIterator<byte[]>() {
+            @Override public boolean hasNext () {
+                try {
+                    return pointer < contentSize() - 1;
+                } catch (StorageSystemException e) {
+                    return false;
+                }
+            }
+
+            @Override public byte[] next() {
+                byte[] decoded = next_or_null();
+                if(decoded!=null)
+                    return decoded;
+                else
+                    throw new NoSuchElementException("No more elements available. (Concurrent delete access?)");
+            }
+
+            @Override public byte[] next_or_null() {
+                try {
+                    return nextVariable();
+                } catch (StorageSystemException e) {
+                    throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+").");
+                }
+            }
+
+            @Override public void skip() {
+                try {
+                    long[] li_bounds = LIbae.get_next_li_bounds(content, pointer, pointer, contentSize() - 1); //todo - test! but it might be contentSize() - 0
+                    if(li_bounds == null)
+                        throw new NoSuchElementException("No more elements available. (Concurrent delete access?)");
+                    pointer = (int) li_bounds[1];
+                } catch (StorageSystemException e) {
+                    throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+").");
+                }
+            }
+
+            @Override public void remove() {
+                throw new UnsupportedOperationException("not supported for message decoding. This is not what this is supposed to do");
+            }
+        };
     }
 }

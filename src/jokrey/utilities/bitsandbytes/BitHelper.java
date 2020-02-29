@@ -379,6 +379,28 @@ public class BitHelper {
                 ((bytes[off+2] & 0xff) <<  8) |
                 ((bytes[off+3] & 0xff)      );
     }
+	/**
+	 * Turns a byte string into it's representation as a long.
+	 * @param bytes a byte array exactly length 8
+	 * @return a long
+	 */
+	public static long getInt64From(byte[] bytes) {
+		if(bytes.length==8) {
+			return ByteBuffer.wrap(bytes).getLong();// big-endian by default
+		}
+		throw new IllegalArgumentException("read error, n!=8");
+	}
+	/** BigEndian */
+	public static long getInt64From(byte[] bytes, int off) {
+		return  ((long)(bytes[off  ]       ) << 56) |
+				((long)(bytes[off+1] & 0xff) << 48) |
+				((long)(bytes[off+2] & 0xff) << 40) |
+				((long)(bytes[off+3] & 0xff) << 32) |
+				((long)(bytes[off+4] & 0xff) << 24) |
+				((long)(bytes[off+5] & 0xff) << 16) |
+				((long)(bytes[off+6] & 0xff) <<  8) |
+				((long)(bytes[off+7] & 0xff)      );
+	}
 
 	/**
 	 * Turns a byte string into it's representation as a float.
@@ -393,9 +415,9 @@ public class BitHelper {
 		long l = 0;
 		for(int i=0;i<len;i++) {
 			if(i==0)
-				l |= (bytes[offset + i]) << (len - i - 1) * 8;
+				l |= ((long)(bytes[offset + i])) << (len - i - 1) * 8;
 			else
-				l |= (bytes[offset + i] & 0xff) << (len - i - 1) * 8;
+				l |= ((long)(bytes[offset + i] & 0xff)) << (len - i - 1) * 8;
 		}
 		return l;
 	}
@@ -418,18 +440,6 @@ public class BitHelper {
 	}
 
     /**
-     * Turns a byte string into it's representation as a long.
-     * @param bytes a byte array exactly length 8
-     * @return a long
-     */
-	public static long getInt64From(byte[] bytes) {
-		if(bytes.length==8) {
-			return ByteBuffer.wrap(bytes).getLong();// big-endian by default
-		}
-		throw new IllegalArgumentException("read error, n!=8");
-	}
-
-    /**
      * Turns a byte string into it's representation as a float.
      * @param bytes a byte array exactly length 4
      * @return a double
@@ -447,7 +457,7 @@ public class BitHelper {
 		return Double.longBitsToDouble(getInt64From(bytes));
 	}
 	public static double getFloat64From(byte[] bytes, int off) {
-		return Double.longBitsToDouble(getIntFromNBytes(bytes, off, 8));
+		return Double.longBitsToDouble(getInt64From(bytes, off));
 	}
 
     /**
