@@ -7,7 +7,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Provides efficient helper functionality for some bit, byte and conversion operations.
@@ -81,21 +85,39 @@ public class BitHelper {
         return (int) ((n >> k) & 1);
     }
 
-    /**
-     * @param n 8bit string - byte
-     * @param k position
-     * @return byte n with bit at position k set (1)
-     */
+	/**
+	 * @param n 8bit string - byte
+	 * @param k position
+	 * @return byte n with bit at position k set (1)
+	 */
 	public static byte setBit(byte n, int k) {
 		return (byte) (n | (1 << k));
 	}
-    /**
-     * @param n 8bit string - byte
-     * @param k position
-     * @return byte n with bit at position k set (0)
-     */
+	/**
+	 * @param n 8bit string - byte
+	 * @param k position
+	 * @return byte n with bit at position k not set (0)
+	 */
 	public static byte unsetBit(byte n, int k) {
 		return (byte) (n & ~(1 << k));
+	}
+
+
+	/**
+	 * @param n 32bit string - int
+	 * @param k position, counting from lsb
+	 * @return int n with bit at position k set (1)
+	 */
+	public static int setBit(int n, int k) {
+		return n | (1 << k);
+	}
+	/**
+	 * @param n 32bit string - int
+	 * @param k position, counting from lsb
+	 * @return int n with bit at position k not set (0)
+	 */
+	public static int unsetBit(int n, int k) {
+		return n & ~(1 << k);
 	}
 
     /**
@@ -691,6 +713,28 @@ public class BitHelper {
 		byte temp = array[second];
 		array[second] = array[first];
 		array[first] = temp;
+	}
+
+    public static int maskedInt32(int numMaskBitsFromLeft) {
+		int mask = 0;
+		for(int i=0;i<numMaskBitsFromLeft;i++)
+			mask = BitHelper.setBit(mask, 31-i);
+		return mask;
+    }
+
+    @Test
+	public void masking() {
+		for(int i=0;i<=32;i++) {
+			int masked = maskedInt32(i);
+			System.out.println("i = " + i);
+			System.out.println("masked = " + masked);
+			System.out.println("BitHelper.getBits(masked) = " + Arrays.toString(BitHelper.getBits(masked)));
+			int testI = 0;
+			for(;testI<i;testI++)
+				assertEquals(BitHelper.getBit(masked, 31 - testI), 1);
+			for(;testI<32;testI++)
+				assertEquals(BitHelper.getBit(masked, 31 - testI), 0);
+		}
 	}
 
 
