@@ -1,11 +1,11 @@
 package jokrey.utilities.encoder.as_union.lb.bytes;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import jokrey.utilities.bitsandbytes.BitHelper;
 import jokrey.utilities.encoder.as_union.AsUnionEncoder;
 import jokrey.utilities.transparent_storage.TransparentStorage;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
 /**
@@ -174,7 +174,7 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
     }
 
     public byte[] decode(BlockPosition pos) {
-        ByteOutputStream out = new ByteOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         if(pos.pointer < 0 || !pos.hasNext(storage))
             return null;
         if(pos.pointer==0) {
@@ -243,7 +243,7 @@ public class LBLIbae implements AsUnionEncoder<byte[], BlockPosition> {
 
 
     @Override public byte[] deleteEntry(BlockPosition pos) {
-        ByteOutputStream out = new ByteOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         if(pos.pointer < 0 || !pos.hasNext(storage))
             return null;
         int virtualPointer = pos.pointer;
