@@ -13,13 +13,13 @@ import static org.junit.Assert.*;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ConcurrentQueueTest {
-    @Test public void singleThread_lockless() {
-            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
-            AverageCallTimeMarker.mark_call_start(method_name);
-        LFQueue<String> queue = new LFQueue<>();
-        run_single_thread_test(queue);
-            AverageCallTimeMarker.mark_call_end(method_name);
-    }
+//    @Test public void singleThread_lockless() {
+//            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
+//            AverageCallTimeMarker.mark_call_start(method_name);
+//        LFQueue<String> queue = new LFQueue<>();
+//        run_single_thread_test(queue);
+//            AverageCallTimeMarker.mark_call_end(method_name);
+//    }
     @Test public void singleThread_locked() {
             String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
             AverageCallTimeMarker.mark_call_start(method_name);
@@ -45,13 +45,13 @@ public class ConcurrentQueueTest {
         AverageCallTimeMarker.print_all("QUEUE");
     }
 
-    @Test public void manyWritersManyReaders_lockless() throws Throwable {
-            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
-            AverageCallTimeMarker.mark_call_start(method_name);
-        LFQueue<String> queue = new LFQueue<>();
-        run_ManyWritersManyReaders(queue);
-            AverageCallTimeMarker.mark_call_end(method_name);
-    }
+//    @Test public void manyWritersManyReaders_lockless() throws Throwable {
+//            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
+//            AverageCallTimeMarker.mark_call_start(method_name);
+//        LFQueue<String> queue = new LFQueue<>();
+//        run_ManyWritersManyReaders(queue);
+//            AverageCallTimeMarker.mark_call_end(method_name);
+//    }
     @Test public void manyWritersManyReaders_locked() throws Throwable {
             String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
             AverageCallTimeMarker.mark_call_start(method_name);
@@ -78,13 +78,13 @@ public class ConcurrentQueueTest {
         AverageCallTimeMarker.print_all("QUEUE");
     }
 
-    @Test public void manyReaders_lockless() throws Throwable {
-            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
-            AverageCallTimeMarker.mark_call_start(method_name);
-        LFQueue<String> queue = new LFQueue<>();
-        run_WriteOnceBeforeManyReaders(queue);
-            AverageCallTimeMarker.mark_call_end(method_name);
-    }
+//    @Test public void manyReaders_lockless() throws Throwable {
+//            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
+//            AverageCallTimeMarker.mark_call_start(method_name);
+//        LFQueue<String> queue = new LFQueue<>();
+//        run_WriteOnceBeforeManyReaders(queue);
+//            AverageCallTimeMarker.mark_call_end(method_name);
+//    }
     @Test public void manyReaders_locked() throws Throwable {
             String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
             AverageCallTimeMarker.mark_call_start(method_name);
@@ -110,13 +110,13 @@ public class ConcurrentQueueTest {
         AverageCallTimeMarker.print_all("QUEUE");
     }
 
-    @Test public void singleWriterManyReaders_lockless() throws Throwable {
-        String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
-        AverageCallTimeMarker.mark_call_start(method_name);
-        LFQueue<String> queue = new LFQueue<>();
-        run_SingleWriterManyReaders(queue);
-        AverageCallTimeMarker.mark_call_end(method_name);
-    }
+//    @Test public void singleWriterManyReaders_lockless() throws Throwable {
+//        String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
+//        AverageCallTimeMarker.mark_call_start(method_name);
+//        LFQueue<String> queue = new LFQueue<>();
+//        run_SingleWriterManyReaders(queue);
+//        AverageCallTimeMarker.mark_call_end(method_name);
+//    }
     @Test public void singleWriterManyReaders_locked() throws Throwable {
         String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
         AverageCallTimeMarker.mark_call_start(method_name);
@@ -142,13 +142,13 @@ public class ConcurrentQueueTest {
         AverageCallTimeMarker.print_all("QUEUE");
     }
 
-    @Test public void threadSuspension_ManyWritersManyReaders_lockless() throws Throwable {
-            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
-            AverageCallTimeMarker.mark_call_start(method_name);
-        LFQueue<String> queue = new LFQueue<>();
-        run_suspendThreads_ManyWritersManyReaders(queue);
-            AverageCallTimeMarker.mark_call_end(method_name);
-    }
+//    @Test public void threadSuspension_ManyWritersManyReaders_lockless() throws Throwable {
+//            String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
+//            AverageCallTimeMarker.mark_call_start(method_name);
+//        LFQueue<String> queue = new LFQueue<>();
+//        run_suspendThreads_ManyWritersManyReaders(queue);
+//            AverageCallTimeMarker.mark_call_end(method_name);
+//    }
     @Test public void threadSuspension_ManyWritersManyReaders_locked() throws Throwable {
             String method_name = new Object(){}.getClass().getEnclosingMethod().getName();
             AverageCallTimeMarker.mark_call_start(method_name);
