@@ -116,6 +116,10 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
         set(pointer, bs);
         pointer+=bs.length;
     }
+    public void skip(int num) {
+//        grow_to_at_least(pointer+num);
+        pointer+=num;
+    }
 
     //DECODE HELPER
     /** decodes the next payload byte as a boolean - reverse of {@link #encode(boolean)}
@@ -284,5 +288,14 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
                 throw new UnsupportedOperationException("not supported for message decoding. This is not what this is supposed to do");
             }
         };
+    }
+
+    @Override public String toString() {
+        return "MessageEncoder{" +
+                "offset=" + offset +
+                ", pointer=" + pointer +
+                ", size=" + size +
+                ", content=" + Arrays.toString(content) +
+                '}';
     }
 }
