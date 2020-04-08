@@ -7,14 +7,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- * todo - use composite keys instead
- *
  * @author jokrey
  */
 public class BadConcurrentMultiKeyMap<K1, K2, V> {
-    HashMap<K1, K2> map1to2 = new HashMap<>();
-    HashMap<K2, K1> map2to1 = new HashMap<>();
-    HashMap<K1, V> mapToV = new HashMap<>();
+    private HashMap<K1, K2> map1to2 = new HashMap<>();
+    private HashMap<K2, K1> map2to1 = new HashMap<>();
+    private HashMap<K1, V> mapToV = new HashMap<>();
 
     public synchronized V put(K1 k1, K2 k2, V v) {
         K2 previousK2 = map1to2.get(k1);
