@@ -23,7 +23,7 @@ public class MessageEncoder extends ByteArrayStorage implements Iterable<byte[]>
     public MessageEncoder(int initial_capacity) { this(false, new byte[initial_capacity], 0, 0); }
     public MessageEncoder(byte[] start_buf) { this(false, start_buf, 0, start_buf.length); }
     public MessageEncoder(int offset, int initial_capacity) {
-        super(true, new byte[initial_capacity], 0);
+        super(true, new byte[Math.max(offset, initial_capacity)], offset);
         this.offset = offset;
         resetPointer();
     }
