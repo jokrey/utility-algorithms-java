@@ -46,6 +46,12 @@ public class ObservableTransparentStorage<SF> implements TransparentStorage<SF> 
         return this;
     }
 
+    @Override public TransparentStorage<SF> insert(long start, SF part) {
+        delegate.insert(start, part);
+        fireDataChanged(start, start+len(part), SET);
+        return this;
+    }
+
     @Override public long contentSize() {
         return delegate.contentSize();
     }

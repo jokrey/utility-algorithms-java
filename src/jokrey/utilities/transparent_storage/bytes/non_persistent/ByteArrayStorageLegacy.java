@@ -74,7 +74,9 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
         }
     }
 
-
+    @Override public TransparentBytesStorage insert(long start, byte[] val) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override public TransparentBytesStorage append(InputStream content, long content_length) throws StorageSystemException {
         try {

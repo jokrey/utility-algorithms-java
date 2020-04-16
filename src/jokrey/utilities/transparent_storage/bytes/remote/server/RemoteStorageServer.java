@@ -1,16 +1,16 @@
 package jokrey.utilities.transparent_storage.bytes.remote.server;
 
 import jokrey.utilities.encoder.tag_based.TagBasedEncoder;
+import jokrey.utilities.network.mcnp.MCNP_Connection;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler;
+import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
 import jokrey.utilities.network.mcnp.io.MCNP_ConnectionIO;
+import jokrey.utilities.network.mcnp.io.MCNP_ServerIO;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.file.FileStorage;
 import jokrey.utilities.transparent_storage.bytes.remote.RemoteStorage;
 import jokrey.utilities.transparent_storage.bytes.remote.RemoteStorageMCNPCauses;
-import jokrey.utilities.network.mcnp.io.ConnectionHandler;
-import jokrey.utilities.network.mcnp.io.ConnectionHandler.ConnectionState;
-import jokrey.utilities.network.mcnp.MCNP_Connection;
-import jokrey.utilities.network.mcnp.io.MCNP_ServerIO;
 
 import java.io.EOFException;
 import java.io.File;
@@ -288,6 +288,10 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     }
     @Override public synchronized RemoteStorageServer delete(long start, long end) throws StorageSystemException {
         delegation.delete(start, end);
+        return this;
+    }
+    @Override public RemoteStorageServer insert(long start, byte[] val) {
+        delegation.insert(start, val);
         return this;
     }
     @Override public synchronized RemoteStorageServer set(long start, byte[] part, int off, int len) throws StorageSystemException {

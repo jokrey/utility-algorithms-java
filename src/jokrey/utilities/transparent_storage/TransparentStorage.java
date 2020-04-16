@@ -82,6 +82,15 @@ public interface TransparentStorage<SF> extends AutoCloseable {
 //    }
 
     /**
+     * Inserts the given bytes at given start index
+     *
+     * @param start start index, has to be within bounds
+     * @param val to be appended
+     * @return this object
+     */
+    TransparentStorage<SF> insert(long start, SF val);
+
+    /**
      * Sets the content from start to start+part.length with part,
      * appending if required (i.e. if start is out of bounds the method will append the underlying to at least contain start+len indices).
      * size = max(size, start+len)

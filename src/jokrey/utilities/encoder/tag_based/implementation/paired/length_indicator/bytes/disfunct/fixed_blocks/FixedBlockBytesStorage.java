@@ -2,8 +2,8 @@ package jokrey.utilities.encoder.tag_based.implementation.paired.length_indicato
 
 import jokrey.utilities.bitsandbytes.BitHelper;
 import jokrey.utilities.transparent_storage.StorageSystemException;
-import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.SubBytesStorage;
+import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
 import java.io.InputStream;
 
@@ -82,6 +82,10 @@ public class FixedBlockBytesStorage implements TransparentBytesStorage {
         setBlockRangeUnused(start, end);
 //        data.delete(start, end);
         return this;
+    }
+
+    @Override public TransparentBytesStorage insert(long start, byte[] val) {
+        throw new UnsupportedOperationException();
     }
 
     @Override public void clear() {

@@ -112,6 +112,10 @@ public class RemoteStorage implements TransparentBytesStorage {
         }
     }
 
+    @Override public TransparentBytesStorage insert(long start, byte[] val) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
         try {
             synchronized (client) {

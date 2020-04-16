@@ -114,6 +114,7 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
     @Override public void clear() {
         throw new UnsupportedOperationException();
     }
+    @Override public SubStorage<SF> insert(long start, SF val) { throw new UnsupportedOperationException(); }
     @Override public SubStorage<SF> delete(long start, long end) throws StorageSystemException {
         throw new UnsupportedOperationException();
     }

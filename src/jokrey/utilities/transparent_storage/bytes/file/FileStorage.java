@@ -4,6 +4,7 @@ import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Implementation of {@link TransparentBytesStorage} writing the bytes into a file.
@@ -106,13 +107,7 @@ public class FileStorage implements TransparentBytesStorage {
                     long raf_length = raf.length();
 
                     long rest_of_file_length = raf_length - end;
-                    long buffer_size = io_buffer_size;
-                    for (long cur_write_index = 0; cur_write_index < rest_of_file_length; cur_write_index += buffer_size) {
-                        byte[] rest_of_file_part = sub(end + cur_write_index, end + cur_write_index + Math.min(buffer_size, rest_of_file_length));
-
-                        raf.seek(start + cur_write_index);
-                        raf.write(rest_of_file_part);
-                    }
+                    copyFileContent(end, start, rest_of_file_length);//copy data from end of deleted area to start of deleted area, overriding the bytes in between
 
                     raf.setLength(raf_length - len);
                 }
@@ -150,6 +145,45 @@ public class FileStorage implements TransparentBytesStorage {
         return this;
     }
 
+    @Override public TransparentBytesStorage insert(long start, byte[] val) {
+        long end = start + val.length;
+        try {
+            synchronized (raf) {
+                long raf_length_before = raf.length();
+                long newLength = raf_length_before + val.length;
+                raf.setLength(newLength); //pre ensure length met
+
+                System.out.println("1 getContent() = " + Arrays.toString(getContent()));
+                copyFileContent(end, newLength-1, raf_length_before - end); //copy data after insert area to end of file
+                System.out.println("2 getContent() = " + Arrays.toString(getContent()));
+                copyFileContent(start, end, end - start); //copy data in insert area to end of insert area
+                System.out.println("3 getContent() = " + Arrays.toString(getContent()));
+                set(start, val);
+                System.out.println("4 getContent() = " + Arrays.toString(getContent()));
+            }
+        } catch (IOException ex) {
+            throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+")");
+        }
+        return this;
+    }
+
+    private void copyFileContent(long from, long to, long numToCopy) throws IOException {
+        if(from < to && numToCopy > (to - from)) {
+            throw new IllegalArgumentException("would override bytes in unspecified way - copy section first");
+        }
+        synchronized (raf) {
+            long buffer_size = io_buffer_size;
+//            if(from > to) {
+                //if from > to, we can just copy - read 'from' bytes, copy to 'to' bytes [potentially overriding bytes, but that does not matter]
+                for (long cur_write_index = 0; cur_write_index < numToCopy; cur_write_index += buffer_size) {
+                    byte[] rest_of_file_part = sub(from + cur_write_index, from + cur_write_index + Math.min(buffer_size, numToCopy));
+
+                    raf.seek(to + cur_write_index);
+                    raf.write(rest_of_file_part);
+//                }
+            }
+        }
+    }
 
     @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
 //        long size = contentSize();

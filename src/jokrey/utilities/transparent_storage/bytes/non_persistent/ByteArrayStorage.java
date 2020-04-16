@@ -138,8 +138,38 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     }
 
 
+    @Override public ByteArrayStorage insert(long start_long, byte[] val) {
+        if(start_long > contentSize()) throw new IndexOutOfBoundsException();
+        if (start_long + val.length > Integer.MAX_VALUE)
+            throw new StorageSystemException("ByteArrayStorage cannot store this many bytes");
+        int start = (int) start_long;
+        int end = start + val.length;
+        int requiredSize = start + val.length;
+        grow_to_at_least(requiredSize);
 
-    @Override public TransparentBytesStorage set(long start_long, InputStream content, long content_length_long) throws StorageSystemException {
+        int size_before = size;
+        size = size_before + val.length;
+
+        System.out.println("val = " + Arrays.toString(val));
+        System.out.println("content = " + Arrays.toString(content));
+        System.out.println("size_before = " + size_before);
+        System.out.println("size = " + size);
+        System.out.println("start = " + start);
+        System.out.println("end = " + end);
+
+        System.arraycopy(content, start, content, end, size_before - start); //copy data start of insert area to end insert area
+
+        System.out.println("content = " + Arrays.toString(content));
+
+        System.arraycopy(val, 0, content, start, end - start); //copy data in insert area to end of insert area
+
+        System.out.println("content = " + Arrays.toString(content));
+
+
+        return this;
+    }
+
+    @Override public ByteArrayStorage set(long start_long, InputStream content, long content_length_long) throws StorageSystemException {
         if(start_long > contentSize()) throw new IndexOutOfBoundsException();
         if (start_long + content_length_long > Integer.MAX_VALUE)
             throw new StorageSystemException("ByteArrayStorage cannot store InputStream of length: " + content_length_long);
@@ -189,7 +219,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
             throw new StorageSystemException("Cannot create a byte array with less than 0 bytes. - sub: start="+start+", end="+end);
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
+    @Override public ByteArrayStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
 //        if(start > size) throw new StorageSystemException("Too large, start("+start+") > size("+size+")"); //would limit appending...
 //        System.out.println("set - start = " + start + ", part.length = " + part.length + ", off = " + off + ", len = " + len);
         long requiredSizeOfAttachedPart = start+len;
@@ -200,7 +230,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         return this;
     }
 
-    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+    @Override public ByteArrayStorage set(long start, byte part) throws StorageSystemException {
         long requiredSizeOfAttachedPart = start+1;
         grow_to_at_least(requiredSizeOfAttachedPart);
         content[(int) start] = part;
@@ -216,7 +246,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         return new ByteArrayInputStream(content);
     }
 
-    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+    @Override public ByteArrayStorage copyInto(long start, byte[] b, int off, int len) {
         System.arraycopy(content, (int) start, b, off, len);
         return this;
     }

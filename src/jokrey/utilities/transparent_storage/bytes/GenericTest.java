@@ -23,15 +23,18 @@ public class GenericTest {
     @Test
     public void byteArrayStorage_Test() {
         test(new ByteArrayStorage());
+        insertTest(new ByteArrayStorage());
     }
     @Test
     public void byteArrayStorageLegacy_Test() {
         test(new ByteArrayStorageLegacy());
+//        insertTest(new ByteArrayStorageLegacy()); //UNSUPPORTED
     }
     @Test
     public void fileStorage_Test() throws IOException {
         try(FileStorage storage = new FileStorage(new File(System.getProperty("user.home")+"/Desktop/storageTestRemoteServer.nothing"))) {
             test(storage);
+            insertTest(storage);
         }
     }
     @Test
@@ -40,6 +43,9 @@ public class GenericTest {
             RemoteStorage storage = new RemoteStorage("localhost", 1552)) {
             test(server);
             test(storage);
+
+//            insertTest(server); //UNSUPPORTED
+//            insertTest(storage); //UNSUPPORTED
         }
     }
 
@@ -83,6 +89,26 @@ public class GenericTest {
 
         storage.set(0, random);
         assertArrayEquals(random, storage.getContent());
+
+        storage.clear();
+    }
+
+    void insertTest(TransparentBytesStorage storage) {
+        storage.clear();
+
+        byte[] result = new byte[] {0,1,2,3,4,5,6,7,8,9};
+        storage.append(Arrays.copyOfRange(result, 0, 5));//added 1-4
+        System.out.println("storage = " + Arrays.toString(storage.getContent()));
+        storage.append(Arrays.copyOfRange(result, 7, result.length));//added 7-9
+        System.out.println("storage = " + Arrays.toString(storage.getContent()));
+        assertEquals(8, storage.contentSize());
+
+        System.out.println("Arrays.copyOfRange(result, 6, 8) = " + Arrays.toString(Arrays.copyOfRange(result, 5, 7)));
+        storage.insert(5, Arrays.copyOfRange(result, 5, 7));
+        System.out.println("storage = " + Arrays.toString(storage.getContent()));
+
+        assertArrayEquals(result, storage.getContent());
+
 
         storage.clear();
     }
