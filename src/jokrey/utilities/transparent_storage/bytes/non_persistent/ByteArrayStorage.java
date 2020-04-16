@@ -150,21 +150,8 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         int size_before = size;
         size = size_before + val.length;
 
-        System.out.println("val = " + Arrays.toString(val));
-        System.out.println("content = " + Arrays.toString(content));
-        System.out.println("size_before = " + size_before);
-        System.out.println("size = " + size);
-        System.out.println("start = " + start);
-        System.out.println("end = " + end);
-
         System.arraycopy(content, start, content, end, size_before - start); //copy data start of insert area to end insert area
-
-        System.out.println("content = " + Arrays.toString(content));
-
         System.arraycopy(val, 0, content, start, end - start); //copy data in insert area to end of insert area
-
-        System.out.println("content = " + Arrays.toString(content));
-
 
         return this;
     }

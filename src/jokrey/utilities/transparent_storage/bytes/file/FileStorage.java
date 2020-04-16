@@ -153,13 +153,9 @@ public class FileStorage implements TransparentBytesStorage {
                 long newLength = raf_length_before + val.length;
                 raf.setLength(newLength); //pre ensure length met
 
-                System.out.println("1 getContent() = " + Arrays.toString(getContent()));
                 copyFileContent(end, newLength-1, raf_length_before - end); //copy data after insert area to end of file
-                System.out.println("2 getContent() = " + Arrays.toString(getContent()));
                 copyFileContent(start, end, end - start); //copy data in insert area to end of insert area
-                System.out.println("3 getContent() = " + Arrays.toString(getContent()));
                 set(start, val);
-                System.out.println("4 getContent() = " + Arrays.toString(getContent()));
             }
         } catch (IOException ex) {
             throw new StorageSystemException("IO Exception thrown by provided InputStream("+ex.getMessage()+")");
