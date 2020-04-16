@@ -56,7 +56,10 @@ public class ObservableTransparentStorage<SF> implements TransparentStorage<SF> 
         return delegate.contentSize();
     }
     @Override public boolean isEmpty() { return delegate.isEmpty(); }
-    @Override public void setContent(SF content) { delegate.setContent(content); }
+    @Override public void setContent(SF content) {
+        delegate.setContent(content);
+        fireDataChanged(0, len(content), SET);
+    }
     @Override public SF getContent() {
         return delegate.getContent();
     }
