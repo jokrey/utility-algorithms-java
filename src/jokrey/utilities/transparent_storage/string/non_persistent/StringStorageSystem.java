@@ -10,71 +10,63 @@ import jokrey.utilities.transparent_storage.TransparentStorage;
  * @author jokrey
  */
 public class StringStorageSystem implements TransparentStorage<String> {
-    private StringBuilder content = new StringBuilder();
+    private StringBuilder content;
+    public StringStorageSystem() {
+        content = new StringBuilder();
+    }
+    public StringStorageSystem(int initialCapacity) {
+        content = new StringBuilder(initialCapacity);
+    }
+    public StringStorageSystem(String initialContent) {
+        content = new StringBuilder(initialContent);
+    }
 
+    @Override public int len(String part) { return part.length(); }
     @Override public void close() {
         content=null;
     }
-
     @Override public void clear() {
         content = new StringBuilder();
     }
-
-
     @Override public void setContent(String content) {
         this.content = new StringBuilder(content);
     }
-
-
     @Override public String getContent() {
         return content.toString();
     }
-
-
     @Override public StringStorageSystem delete(long start, long end) {
         if(start>Integer.MAX_VALUE || end>Integer.MAX_VALUE)
             throw new StorageSystemException("StringStorageSystem only supports integer sized content");
         content.delete((int) start, (int) end);
         return this;
     }
-
-
     @Override public StringStorageSystem append(String val) {
         content.append(val);
         return this;
     }
-
-
     @Override public String sub(long start, long end) {
         return content.substring((int) start, (int) end);
     }
-
     @Override public StringStorageSystem set(long start, String part, int off, int len) {
         content.delete((int)start, (int) (start+part.length()<contentSize()? start+part.length():contentSize()));
         content.insert((int) start, part, off, len);
         return this;
     }
-
     @Override public StringStorageSystem set(long start, String part, int off) {
         return set(start, part, off, part.length()-off);
     }
     @Override public StringStorageSystem set(long start, String part) {
         return set(start, part, 0);
     }
-
     @Override public long contentSize() {
         return content.length();
     }
-
     @Override public boolean isEmpty() {
         return contentSize() == 0;
     }
-
     @Override public int hashCode() {
         return getContent().hashCode();
     }
-
-
     @Override public boolean equals(Object obj) {
         return obj instanceof StringStorageSystem && efficient_equals(content, ((StringStorageSystem)obj).content);
     }
@@ -88,6 +80,9 @@ public class StringStorageSystem implements TransparentStorage<String> {
      * I MEAN THE STRING BUILDER CLASS WAS INVENTED FOR EFFICIENCY. BECAUSE STRING IMMUTABILITY RENDERS THEM SAFE;BUT SLOW,
      *     SO DO ANY OF THEM THINK THAT MAYBE CREATING TWO STRING FOR SIMPLE COMPARISON IS EFFICIENT???
      *     OR DID THEY JUST THINK: NO000OO, NOBODY WILL EVER NEED TO COMPARE STRING BUILDERS....
+     *     TO BE FAIR IT PROBABLY WAS THIS; BUT WHY???
+     *     DID THEY THINK WE'D JUST USE THEM TO BUILD STRINGS AND THEN USE STRINGS?
+     *     TO BE FAIR IT PROBABLY WAS THIS; BUT DIDN'T THEY THINK WE'D NEED TO CONTINUALlY BUILD STRINGS AT SOME POINT?
      */
     public static boolean efficient_equals(StringBuilder sb1, StringBuilder sb2) {
         int l1 = sb1.length();

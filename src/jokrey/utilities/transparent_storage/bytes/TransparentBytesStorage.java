@@ -2,8 +2,6 @@ package jokrey.utilities.transparent_storage.bytes;
 
 import jokrey.utilities.transparent_storage.TransparentStorage;
 import jokrey.utilities.transparent_storage.StorageSystemException;
-import jokrey.utilities.transparent_storage.bytes.wrapper.SubBytesStorage;
-
 import java.io.InputStream;
 
 /**
@@ -12,6 +10,10 @@ import java.io.InputStream;
  * @author jokrey
  */
 public interface TransparentBytesStorage extends TransparentStorage<byte[]> {
+    @Override default int len(byte[] part) {
+        return part.length;
+    }
+
     /**
      * Will read bytes from stream until content_length is reached.
      *   If the stream ends before that many bytes were read any number of exceptions will be thrown.
@@ -92,15 +94,15 @@ public interface TransparentBytesStorage extends TransparentStorage<byte[]> {
     }
 
     default SubBytesStorage subStorage(long start, long end) {
-        return new SubBytesStorage(start, end, this);
+        return new SubBytesStorage(this, end, start);
     }
     default SubBytesStorage[] split(long at) {
         return split(at, Long.MAX_VALUE);
     }
     default SubBytesStorage[] split(long at, long max) {
         return new SubBytesStorage[] {
-                new SubBytesStorage(0, at, this),
-                new SubBytesStorage(0, max, this)
+                new SubBytesStorage(this, at, 0),
+                new SubBytesStorage(this, max, 0)
         };
     }
 }

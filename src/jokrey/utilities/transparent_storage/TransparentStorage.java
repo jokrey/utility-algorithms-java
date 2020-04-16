@@ -12,6 +12,14 @@ package jokrey.utilities.transparent_storage;
  */
 public interface TransparentStorage<SF> extends AutoCloseable {
     /**
+     * Typically only internal use to determine the length of a part in the storage format.
+     * This entails that the storage format has to support a length function.
+     * @param part a part of data in storage format
+     * @return the length of the part (int because parts directly in SF always have to fit RAM, which should fit int, if that is not the case please contact author)
+     */
+    int len(SF part);
+
+    /**
      * Clears the entire content to an initial state.
      * getContent should return something empty(ish) after.
      */
@@ -53,6 +61,19 @@ public interface TransparentStorage<SF> extends AutoCloseable {
      * @return the sub
      */
     SF sub(long start, long end);
+
+    default SubStorage<SF> subStorage(long start, long end) {
+        return new SubStorage<SF>(this, start, end);
+    }
+    default SubStorage<SF>[] split(long at) {
+        return split(at, Long.MAX_VALUE);
+    }
+    default SubStorage<SF>[] split(long at, long max) {
+        return new SubStorage[] {
+                new SubStorage<SF>(this, 0, at),
+                new SubStorage<SF>(this, 0, max)
+        };
+    }
 
     /**
      * Sets the content from start to start+part.length with part,
@@ -110,9 +131,7 @@ public interface TransparentStorage<SF> extends AutoCloseable {
 
 
     //standard is required
-
     int hashCode();
-
     boolean equals(Object o);
 
     /**

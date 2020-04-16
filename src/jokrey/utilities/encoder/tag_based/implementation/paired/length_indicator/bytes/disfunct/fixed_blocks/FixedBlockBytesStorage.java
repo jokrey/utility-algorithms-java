@@ -3,7 +3,7 @@ package jokrey.utilities.encoder.tag_based.implementation.paired.length_indicato
 import jokrey.utilities.bitsandbytes.BitHelper;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
-import jokrey.utilities.transparent_storage.bytes.wrapper.SubBytesStorage;
+import jokrey.utilities.transparent_storage.bytes.SubBytesStorage;
 
 import java.io.InputStream;
 
