@@ -129,10 +129,6 @@ public class RemoteStorage implements TransparentBytesStorage {
         }
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
-        return set(start, part, off, part.length-off);
-    }
-
     @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
         return set(start, new byte[] {part});
     }

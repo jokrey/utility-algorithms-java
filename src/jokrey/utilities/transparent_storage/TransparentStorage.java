@@ -62,18 +62,24 @@ public interface TransparentStorage<SF> extends AutoCloseable {
      */
     SF sub(long start, long end);
 
+    default SubStorage<SF> subStorage(long start) {
+        return new SubStorage<>(this, start, contentSize());
+    }
     default SubStorage<SF> subStorage(long start, long end) {
-        return new SubStorage<SF>(this, start, end);
+        return new SubStorage<>(this, start, end);
     }
     default SubStorage<SF>[] split(long at) {
-        return split(at, Long.MAX_VALUE);
-    }
-    default SubStorage<SF>[] split(long at, long max) {
         return new SubStorage[] {
-                new SubStorage<SF>(this, 0, at),
-                new SubStorage<SF>(this, 0, max)
+                new SubStorage<>(this, 0, at),
+                new SubStorage<>(this, at, contentSize())
         };
     }
+//    default SubStorage<SF>[] split(long at, long max) {
+//        return new SubStorage[] {
+//                new SubStorage<SF>(this, 0, at),
+//                new SubStorage<SF>(this, 0, max)
+//        };
+//    }
 
     /**
      * Sets the content from start to start+part.length with part,
@@ -96,7 +102,9 @@ public interface TransparentStorage<SF> extends AutoCloseable {
      * @param part not null
      * @param off
      */
-    TransparentStorage<SF> set(long start, SF part, int off);
+    default TransparentStorage<SF> set(long start, SF part, int off) {
+        return set(start, part, off, len(part)-off);
+    }
 
     /**
      * Sets the content from start to start+part.length with part,

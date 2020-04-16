@@ -261,7 +261,7 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     @Override public byte getByte(long index) {
         return delegation.getByte(index);
     }
-    @Override public TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
+    @Override public synchronized TransparentBytesStorage copyInto(long start, byte[] b, int off, int len) {
         return delegation.copyInto(start, b, off, len);
     }
     @Override public synchronized RemoteStorageServer append(byte[] val) throws StorageSystemException {
@@ -290,7 +290,7 @@ public class RemoteStorageServer implements TransparentBytesStorage {
         delegation.delete(start, end);
         return this;
     }
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
+    @Override public synchronized RemoteStorageServer set(long start, byte[] part, int off, int len) throws StorageSystemException {
         delegation.set(start, part, off, len);
         return this;
     }
@@ -302,11 +302,11 @@ public class RemoteStorageServer implements TransparentBytesStorage {
         delegation.set(start, part);
         return this;
     }
-    @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
+    @Override public synchronized RemoteStorageServer set(long start, byte part) throws StorageSystemException {
         delegation.set(start, part);
         return this;
     }
-    @Override public RemoteStorageServer set(long start, InputStream part, long part_length) throws StorageSystemException {
+    @Override public synchronized RemoteStorageServer set(long start, InputStream part, long part_length) throws StorageSystemException {
         delegation.set(start, part, part_length);
         return this;
     }

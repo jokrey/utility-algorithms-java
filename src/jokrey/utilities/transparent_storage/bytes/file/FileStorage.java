@@ -167,10 +167,6 @@ public class FileStorage implements TransparentBytesStorage {
         return this;
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
-        return set(start, part, 0, part.length);
-    }
-
     @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
         try {
             synchronized (raf) {

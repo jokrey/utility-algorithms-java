@@ -152,10 +152,6 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
         return this;
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
-        return set(start, part, 0, part.length);
-    }
-
     @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
         if(start > count) throw new StorageSystemException("Too large, start > count");
         else if(start == count) write(part);

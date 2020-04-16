@@ -2,7 +2,6 @@ package jokrey.utilities.transparent_storage.bytes;
 
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.SubStorage;
-import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 
 import java.io.InputStream;
@@ -50,6 +49,26 @@ public class SubBytesStorage extends SubStorage<byte[]> implements TransparentBy
 
 
     //OVERRIDES TO CORRECT RETURN TYPE
+    @Override public SubBytesStorage subStorage(long start) {
+        if(start < this.start)
+            throw new IndexOutOfBoundsException("start("+start+") < this.start("+this.start+")");
+        return new SubBytesStorage((TransparentBytesStorage) delegate, this.start + start, end());
+    }
+    @Override public SubBytesStorage subStorage(long start, long end) {
+        if(start < this.start || end > this.end)
+            throw new IndexOutOfBoundsException("start("+start+") < this.start("+this.start+") || end("+end+") > this.end("+this.end+")");
+        return new SubBytesStorage((TransparentBytesStorage) delegate, start, end);
+    }
+    @Override public SubBytesStorage[] split(long at) {
+        long split_start = start + at;
+        long split_end = end();
+        if(split_start > split_end)
+            throw new IndexOutOfBoundsException("split_start("+split_start+") > split_end("+split_end+")");
+        return new SubBytesStorage[] {
+                new SubBytesStorage((TransparentBytesStorage) delegate, 0, split_start),
+                new SubBytesStorage((TransparentBytesStorage) delegate, split_start, split_end)
+        };
+    }
     public SubBytesStorage delete(long start, long end) throws StorageSystemException {
         super.delete(start, end);
         return this;

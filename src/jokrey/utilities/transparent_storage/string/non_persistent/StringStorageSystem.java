@@ -1,7 +1,8 @@
 package jokrey.utilities.transparent_storage.string.non_persistent;
 
 import jokrey.utilities.transparent_storage.StorageSystemException;
-import jokrey.utilities.transparent_storage.TransparentStorage;
+
+import java.util.ArrayList;
 
 /**
  * Implementation of TransparentStorage wrapping every single call to an internal StringBuilder.
@@ -9,7 +10,7 @@ import jokrey.utilities.transparent_storage.TransparentStorage;
  *
  * @author jokrey
  */
-public class StringStorageSystem implements TransparentStorage<String> {
+public class StringStorageSystem implements StringStorage {
     private StringBuilder content;
     public StringStorageSystem() {
         content = new StringBuilder();
@@ -71,6 +72,8 @@ public class StringStorageSystem implements TransparentStorage<String> {
         return obj instanceof StringStorageSystem && efficient_equals(content, ((StringStorageSystem)obj).content);
     }
 
+
+
     /**
      * Rant:
      * WHAT THE HELL WHY THE HELL DO I HAVE TO IMPLEMENT THIS??????????
@@ -91,5 +94,14 @@ public class StringStorageSystem implements TransparentStorage<String> {
             if(sb1.charAt(i) != sb2.charAt(i))
                 return false;
         return true;
+    }
+
+
+
+    @Override public long indexOf(String s, long from) {
+        return content.indexOf(s, (int) from);
+    }
+    @Override public long lastIndexOf(String s, long backwardsFrom) {
+        return content.lastIndexOf(s, (int) backwardsFrom);
     }
 }

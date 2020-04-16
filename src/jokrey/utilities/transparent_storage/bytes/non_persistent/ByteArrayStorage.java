@@ -200,14 +200,6 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         return this;
     }
 
-    @Override public TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
-        return set(start, part, 0, part.length);
-    }
-
-    @Override public TransparentBytesStorage set(long start, byte[] part) throws StorageSystemException {
-        return set(start, part, 0);
-    }
-
     @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
         long requiredSizeOfAttachedPart = start+1;
         grow_to_at_least(requiredSizeOfAttachedPart);

@@ -1,5 +1,7 @@
 package jokrey.utilities.transparent_storage;
 
+import jokrey.utilities.transparent_storage.string.non_persistent.SubStringStorage;
+
 import java.util.Objects;
 
 /**
@@ -48,7 +50,7 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
         throw new IndexOutOfBoundsException();
     }
 
-    @Override public TransparentStorage<SF> set(long start, SF part, int off, int len) throws StorageSystemException {
+    @Override public SubStorage<SF> set(long start, SF part, int off, int len) throws StorageSystemException {
         long delegate_size = delegate.contentSize();
         if(delegate_size + len(part) <= end) {
             delegate.set(this.start+start, part, off, len);
@@ -57,11 +59,11 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
         throw new IndexOutOfBoundsException("Doesn't fit by "+((delegate_size+len(part))-end)+" bytes");
     }
 
-    @Override public TransparentStorage<SF> set(long start, SF part, int off) throws StorageSystemException {
+    @Override public SubStorage<SF> set(long start, SF part, int off) throws StorageSystemException {
         return set(start, part, off, len(part)-off);
     }
 
-    @Override public TransparentStorage<SF> set(long start, SF part) throws StorageSystemException {
+    @Override public SubStorage<SF> set(long start, SF part) throws StorageSystemException {
         return set(start, part, 0);
     }
 
@@ -81,6 +83,29 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
         return delegate.sub(start, Math.min(end, delegate.contentSize()));
     }
 
+
+
+    @Override public SubStorage<SF> subStorage(long start) {
+        if(start < this.start)
+            throw new IndexOutOfBoundsException("start("+start+") < this.start("+this.start+")");
+        return new SubStorage<>(delegate, this.start + start, end());
+    }
+    @Override public SubStorage<SF> subStorage(long start, long end) {
+        if(start < this.start || end > this.end)
+            throw new IndexOutOfBoundsException("start("+start+") < this.start("+this.start+") || end("+end+") > this.end("+this.end+")");
+        return new SubStorage<>(delegate, start, end);
+    }
+    @Override public SubStorage<SF>[] split(long at) {
+        long split_start = start + at;
+        long split_end = end();
+        if(split_start > split_end)
+            throw new IndexOutOfBoundsException("split_start("+split_start+") > split_end("+split_end+")");
+        return new SubStorage[] {
+                new SubStorage<>(delegate, 0, split_start),
+                new SubStorage<>(delegate, split_start, split_end)
+        };
+    }
+
     public void startIndexAdd(int by) {
         start+=by;
     }
@@ -89,7 +114,7 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
     @Override public void clear() {
         throw new UnsupportedOperationException();
     }
-    @Override public TransparentStorage<SF> delete(long start, long end) throws StorageSystemException {
+    @Override public SubStorage<SF> delete(long start, long end) throws StorageSystemException {
         throw new UnsupportedOperationException();
     }
     /**
@@ -98,7 +123,6 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
     @Override public void close() {
         delegate=null;
     }
-
 
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -118,5 +142,13 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
                 ", end=" + end +
                 ", delegate.size=" + delegate.contentSize() +
                 '}';
+    }
+
+    public SubStorage<SF> combineWith(SubStorage<SF> directlyFollowing) {
+        if(this.end() != directlyFollowing.start)
+            throw new IllegalArgumentException("this.end()("+this.end()+") != directlyFollowing.start("+directlyFollowing.start+")");
+        if(delegate != directlyFollowing.delegate)
+            throw new IllegalArgumentException("delegate != directlyFollowing.delegate");
+        return new SubStorage<>(delegate, this.start, directlyFollowing.end);
     }
 }
