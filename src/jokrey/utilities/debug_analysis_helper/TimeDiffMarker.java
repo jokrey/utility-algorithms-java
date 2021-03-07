@@ -52,6 +52,11 @@ public class TimeDiffMarker {
 	public static void println(String id) {
 		System.out.println(id+" took: "+getDiffFor_as_string(id) + "s");
 	}
+	public static void println(String id, double threshold) {
+		String difStr = getDiffFor_as_string(id, threshold);
+		if(difStr != null)
+			System.out.println(id+" took: "+difStr + "s");
+	}
 	public static void println_setMark(String id) {
 	    double dif = getDiffFor_in_seconds(id);
 		System.out.println(id+(dif==0?" started":" took: "+String.format("%f",dif) + "s"));
@@ -65,11 +70,16 @@ public class TimeDiffMarker {
 	}
 
 	public static String getDiffFor_as_string(String id) {
-        return String.format("%f",(getDiffFor_in_seconds(id)));
-    }
-    public static double getDiffFor_in_seconds(String id) {
-        return getDiffFor_in_nano(id) / 1e9;
-    }
+		return String.format("%f",(getDiffFor_in_seconds(id)));
+	}
+	public static double getDiffFor_in_seconds(String id) {
+		return getDiffFor_in_nano(id) / 1e9;
+	}
+	public static String getDiffFor_as_string(String id, double threshold) {
+		double d = getDiffFor_in_seconds(id);
+		if (d < threshold) return null;
+		return String.format("%f",d);
+	}
 
     public static void print_all() {
         System.out.println("=== Printing Current Marks ===");
