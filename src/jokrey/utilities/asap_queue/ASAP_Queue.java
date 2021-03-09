@@ -1,6 +1,8 @@
 package jokrey.utilities.asap_queue;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * "Queue" that stores calls that may be executable at a later time.
@@ -8,8 +10,8 @@ import java.util.*;
  * Has it's applications.
  */
 public class ASAP_Queue {
-    private final HashMap<Integer, PredeterminableCall> once_calls = new HashMap<>();
-    private final Queue<PredeterminableCall> call_queue = new LinkedList<>();
+    private final Map<Integer, PredeterminableCall> once_calls = new ConcurrentHashMap<>();
+    private final Queue<PredeterminableCall> call_queue = new ConcurrentLinkedQueue<>();
 
     /**
      * @return whether any calls are in the queue
