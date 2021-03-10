@@ -105,6 +105,9 @@ public class FileStorage implements TransparentBytesStorage {
             if (len > 0) {
                 synchronized (raf) {
                     long raf_length = raf.length();
+                    if(start>=raf_length || end > raf_length || start < 0 || end < 0) {
+                        throw new IndexOutOfBoundsException("raf_length("+raf_length+"), start("+start+"), end("+end+")");
+                    }
 
                     long rest_of_file_length = raf_length - end;
                     copyFileContent(end, start, rest_of_file_length);//copy data from end of deleted area to start of deleted area, overriding the bytes in between

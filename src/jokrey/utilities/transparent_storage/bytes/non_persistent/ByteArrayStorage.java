@@ -125,7 +125,10 @@ public class ByteArrayStorage implements TransparentBytesStorage {
     @Override public ByteArrayStorage delete(long start, long end) throws StorageSystemException {
         int len = (int) (end - start);
         if (len > 0) {
-            System.err.println("contentSize: "+contentSize());
+            if(start>=size || end > size || start < 0 || end < 0) {
+                throw new IndexOutOfBoundsException("size("+size+"), start("+start+"), end("+end+")");
+            }
+
             System.arraycopy(content, (int) start + len, content, (int) start, (int) (this.size - end));  //override delete section with rest of array
             size -= len;
 
@@ -133,7 +136,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
 
             return this;
         } else {
-            throw new StorageSystemException("Cannot delete 0 or less than 0 bytes.");
+            throw new StorageSystemException("Cannot delete 0 or less than 0 bytes(delAttemptRange=["+start+", "+end+"]).");
         }
     }
 

@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -46,6 +47,19 @@ public interface ExtendedIterator<E> extends Iterator<E> {
     }
 
     /**
+     * NOTE: Need to override EITHER this or next_or_null or both, but that is typically useless.
+     * @return next element
+     * @throws NoSuchElementException if no more elements available
+     */
+    @Override default E next() {
+        E decoded = next_or_null();
+        if(decoded!=null)
+            return decoded;
+        else
+            throw new NoSuchElementException("No more elements available. (Concurrent delete access?)");
+    }
+
+    /**
      * Should work without previous calls to {@link #hasNext()}. If {@link #hasNext()} returns false, this method should return null.
      * Default version works, but it uses exceptions as flow control.
      * Should be overridden for a quicker version
@@ -61,8 +75,13 @@ public interface ExtendedIterator<E> extends Iterator<E> {
     }
 
 
+    default List<E> collect() {
+        ArrayList<E> list = new ArrayList<>();
+        forEachRemaining(list::add);
+        return list;
+    }
 
-    //HELPER FOR GENERIC ARRAY CREATION
+    //HELPER FOR GENERIC ARRAY CREATION - DOES NOT FIT THIS CLASS, BUT WHATEVERYDO
     static Class getTypeClassFor(Class a_generic_sub_class) {
         return (Class)
                 ((ParameterizedType) a_generic_sub_class.getGenericSuperclass())
