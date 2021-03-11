@@ -284,7 +284,7 @@ public class VarSizedRingBuffer {
         storage.set(
                 0,
                 BitHelper.getBytes(newLwl), BitHelper.getBytes(newCole),
-                BitHelper.getBytes(newLwl), BitHelper.getBytes(-1)
+                BitHelper.getBytes(newLwl), BitHelper.getBytes((long) -1)
         );
     }
 
