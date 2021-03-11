@@ -84,6 +84,7 @@ public class VSRBTests {
         check(vsrb, expectedTotalContent);
     }
     public static void check(VarSizedRingBuffer vsrb, List<String> expectedTotalContent) {
+        assertEquals(expectedTotalContent.size(), vsrb.size());//tests more the size function than anything else
         assertEquals(expectedTotalContent, vsrb.iterator().collect().stream().map(String::new).collect(Collectors.toList()));
     }
 
@@ -171,5 +172,12 @@ public class VSRBTests {
         } finally {
             VSBRDebugPrint.printContents(vsrb, store, String::new);
         }
+    }
+
+
+
+    @Test
+    public void clearTest() {
+
     }
 }

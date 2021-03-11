@@ -6,14 +6,17 @@ import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.simple.data_structure.ExtendedIterator;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
+import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * A fifo queue on disk(or at least auto serialized)
+ * A fifo auto-queue on disk(or at least auto serialized)
+ *
+ * todo: deleting elements manually
+ * todo: reverse iteration (
  */
 public class VarSizedRingBuffer {
     public final long max;
@@ -22,6 +25,13 @@ public class VarSizedRingBuffer {
 
     protected final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
+    /**
+     * @param storage must be editable,
+     *                for atomicity of this buffer it must support atomicity of
+     *                {@link TransparentBytesStorage#set(long, byte[]...)} and {@link TransparentBytesStorage#delete(long, long)} and {@link TransparentBytesStorage#setContent(Object)}
+     * @param max max index at which data will be written to underlying storage(appends will wrap and overwrite)
+     * @throws IllegalArgumentException if max < {@link VarSizedRingBuffer#START} or max < storage.contentSize()
+     */
     public VarSizedRingBuffer(TransparentBytesStorage storage, long max) {
         if(max < START) throw new IllegalArgumentException("max cannot be smaller than header("+START+" bytes)");
         if(max < storage.contentSize()) throw new IllegalArgumentException("max cannot be smaller than current storage size - truncate first");
@@ -31,6 +41,12 @@ public class VarSizedRingBuffer {
         initHeader();
     }
 
+    /**
+     * Append the given element to the end of this buffer,
+     *   the new element will be overwritten later than any other elements previously in the buffer
+     * @throws IllegalArgumentException if given element does not fit buffer(i.e. max < START + li(e) + |e|)
+     * @throws IllegalStateException if the underlying data is corrupt and does not represent a vsrb
+     */
     public void append(byte[] e) {
         rwLock.writeLock().lock();
         try {
@@ -95,6 +111,10 @@ public class VarSizedRingBuffer {
         }
     }
 
+    /**
+     * Any single read operation will be read locked.
+     * @return an extended iterator capable of next, hasNext and skip (delete is not supported)
+     */
     public ExtendedIterator<byte[]> iterator() {
         rwLock.readLock().lock();
         try {
@@ -147,16 +167,18 @@ public class VarSizedRingBuffer {
                 @Override public void skip() {
                     rwLock.readLock().lock();
                     try {
-                        if (iter.pointer == lwl)
-                            throw new NoSuchElementException("Cannot skip, reached eof");
+                        if (!wrapReadAllowed.get() && iter.pointer == lwl)
+                            throw new NoSuchElementException("No next element");
+
                         long decoded = decoder.skipEntry(iter);
-                        if(decoded < 0) {//no next element was available
-                            if(!wrapReadAllowed.get())
-                                throw new NoSuchElementException("Cannot skip, reached eof");
-                            wrapReadAllowed.set(false);
-                            iter.pointer = START;
-                            skip();
-                        }
+                        if(decoded >= 0) return;
+
+                        if(!wrapReadAllowed.get())
+                            throw new NoSuchElementException("No next element");
+
+                        wrapReadAllowed.set(false);
+                        iter.pointer = START;
+                        skip();
                     } catch (StorageSystemException e) {
                         throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+"). Kinda indicates no such element");
                     } finally {
@@ -264,5 +286,48 @@ public class VarSizedRingBuffer {
                 BitHelper.getBytes(newLwl), BitHelper.getBytes(newCole),
                 BitHelper.getBytes(newLwl), BitHelper.getBytes(-1)
         );
+    }
+
+
+
+
+
+
+    //ADDITIONAL, SECONDARY FUNCTIONALITY
+
+    /**
+     * @return the earliest added element, that is still in this buffer
+     */
+    public byte[] earliest() {
+        return iterator().next_or_null();
+    }
+
+    /**
+     * Calculates size by iteration, should be considered costly
+     * @return the number of elements currently accessible by the iterator.
+     */
+    public int size() {
+        int counter = 0;
+        ExtendedIterator<?> iterator = iterator();
+        while(iterator.hasNext()) {
+            iterator.skip();
+            counter++;
+        }
+        return counter;
+    }
+
+    /**
+     * Clears this buffer, might change the size of the underlying storage.
+     */
+    public void clear() {
+        rwLock.writeLock().lock();
+        try {
+            storage.setContent(ByteArrayStorage.getConcatenated(
+                BitHelper.getBytes(START), BitHelper.getBytes(START),
+                BitHelper.getBytes(START), BitHelper.getBytes(-1))
+            );
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
 }
