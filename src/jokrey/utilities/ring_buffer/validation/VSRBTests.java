@@ -7,6 +7,7 @@ import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorag
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -178,6 +179,14 @@ public class VSRBTests {
 
     @Test
     public void clearTest() {
+        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+11);
+        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
 
+        afterWriteStateTest(store, vsrb, "4444", Arrays.asList("4444"));
+        afterWriteStateTest(store, vsrb, "333", Arrays.asList("4444", "333"));
+
+        vsrb.clear();
+
+        check(vsrb, Collections.emptyList());
     }
 }
