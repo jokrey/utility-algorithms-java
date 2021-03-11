@@ -79,7 +79,7 @@ public class VSRBTests {
     }
 
     public static void afterWriteStateTest(TransparentBytesStorage store, VarSizedRingBuffer vsrb, String toAdd, List<String> expectedTotalContent) {
-        vsrb.write(toAdd.getBytes());//takes up 3 bytes
+        vsrb.append(toAdd.getBytes());//takes up 3 bytes
         VSBRDebugPrint.printContents(vsrb, store, String::new);
         check(vsrb, expectedTotalContent);
     }
@@ -95,7 +95,7 @@ public class VSRBTests {
             for (; i < 100; i++) {
                 TransparentBytesStorage store = new ByteArrayStorage(100);
                 VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, 100);
-                vsrb.write(GenericPerformanceTest.generate_utf8_conform_byte_array(i));
+                vsrb.append(GenericPerformanceTest.generate_utf8_conform_byte_array(i));
             }
             fail("too small not called");
         } catch (IllegalArgumentException ignore) {
@@ -109,7 +109,7 @@ public class VSRBTests {
 
         for(int i=0;i<num;i++) {
             byte[] e = deterministicGenerator.apply(i);
-            vsrb.write(e);
+            vsrb.append(e);
             VSBRDebugPrint.printContents(vsrb, store, String::new);
 
             Iterator<byte[]> iterator = vsrb.iterator();
@@ -156,7 +156,7 @@ public class VSRBTests {
         try {
             for (int i = 0; i < num; i++) {
                 byte[] e = deterministicGenerator.apply(i);
-                vsrb.write(e);
+                vsrb.append(e);
 //                VSBRDebugPrint.printContents(vsrb, store, String::new);
 
                 List<byte[]> iterator = vsrb.iterator().collect();

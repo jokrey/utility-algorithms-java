@@ -28,7 +28,7 @@ public class VarSizedRingBuffer {
         initHeader();
     }
 
-    public void write(byte[] e) {
+    public void append(byte[] e) {
         rwLock.writeLock().lock();
         try {
             byte[] li = LIbae.generateLI(e.length);

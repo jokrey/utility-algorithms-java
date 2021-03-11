@@ -192,7 +192,7 @@ public class CrashConsistencyValidation {
                     }
                     System.err.println("crash = " + crash);
                 } else {
-                    vsrb.write(e);
+                    vsrb.append(e);
                     iterator = vsrb.iterator().collect();
                 }
 
