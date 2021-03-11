@@ -15,8 +15,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * A fifo auto-queue on disk(or at least auto serialized)
  *
- * todo: deleting elements manually
- * todo: reverse iteration (
+ * todo: reverse iteration (done by adding a reverse li(leading_li must be at the end) to the end (double linked))
+ *                          start point of reverse iteration is lwl(because just before that will be the reverse-li)
  */
 public class VarSizedRingBuffer {
     public final long max;
