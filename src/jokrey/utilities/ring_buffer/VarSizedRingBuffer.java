@@ -12,6 +12,9 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * A fifo queue on disk(or at least auto serialized)
+ */
 public class VarSizedRingBuffer {
     public final long max;
 
