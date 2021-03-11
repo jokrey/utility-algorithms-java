@@ -160,6 +160,13 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
         else buf[(int) start] = part;
         return this;
     }
+    @Override public TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException {
+        for(byte[] part : parts) {
+            set(at, part);
+            at += part.length;
+        }
+        return this;
+    }
 
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         return new ByteArrayInputStream(sub(start, end));

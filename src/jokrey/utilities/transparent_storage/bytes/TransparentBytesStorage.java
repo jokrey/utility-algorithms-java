@@ -85,6 +85,7 @@ public interface TransparentBytesStorage extends TransparentStorage<byte[]> {
     TransparentBytesStorage delete(long start, long end) throws StorageSystemException;
     TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException;
     TransparentBytesStorage set(long start, byte part) throws StorageSystemException;
+    TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException;
     default TransparentBytesStorage set(long start, byte[] part, int off) throws StorageSystemException {
         return set(start, part, off, part.length);
     }

@@ -228,6 +228,14 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         return this;
     }
 
+    @Override public TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException {
+        for(byte[] part : parts) {
+            set(at, part);
+            at += part.length;
+        }
+        return this;
+    }
+
     @Override public InputStream substream(long start, long end) throws StorageSystemException {
         return new ByteArrayInputStream(sub(start, end)); //todo - custom stream, this is rather overkill and problematic for end >>> start
     }
@@ -411,4 +419,16 @@ public class ByteArrayStorage implements TransparentBytesStorage {
 //            resize_to_next_bigger_page_size(at_least);
 //        }
 //    }
+
+    public static byte[] getConcatenated(byte[]... parts) {
+        int partsLength = 0;
+        for(byte[] part:parts) partsLength += part.length;
+
+        byte[] concatenated = new byte[partsLength];
+        int counter = 0;
+        for(byte[] part:parts) {
+            System.arraycopy(part, 0, concatenated, counter, part.length);
+        }
+        return concatenated;
+    }
 }

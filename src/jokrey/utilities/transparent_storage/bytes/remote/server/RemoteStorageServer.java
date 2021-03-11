@@ -100,8 +100,8 @@ public class RemoteStorageServer implements TransparentBytesStorage {
 
     //to hide it from outside access
     private class RemoteStorageServer_ConnectionHandler implements ConnectionHandler<ConnectionState> {
-        private AtomicLong global_connection_counter = new AtomicLong(0);
-        private AtomicLong current_connection_count = new AtomicLong(0);
+        private final AtomicLong global_connection_counter = new AtomicLong(0);
+        private final AtomicLong current_connection_count = new AtomicLong(0);
 
         @Override public ConnectionState newConnection(int initial_cause, MCNP_ConnectionIO connection) {
             long thread_local_thread_id = global_connection_counter.getAndIncrement();
@@ -309,6 +309,9 @@ public class RemoteStorageServer implements TransparentBytesStorage {
     @Override public synchronized RemoteStorageServer set(long start, byte part) throws StorageSystemException {
         delegation.set(start, part);
         return this;
+    }
+    @Override public synchronized TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException {
+        return delegation.set(at, parts);
     }
     @Override public synchronized RemoteStorageServer set(long start, InputStream part, long part_length) throws StorageSystemException {
         delegation.set(start, part, part_length);

@@ -3,6 +3,7 @@ package jokrey.utilities.transparent_storage.bytes.remote;
 import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.delegation.remote.RemoteEncoderMCNPCauses;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
+import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 import jokrey.utilities.transparent_storage.bytes.remote.server.RemoteStorageServer;
 import jokrey.utilities.network.mcnp.io.MCNP_ClientIO;
 
@@ -135,6 +136,10 @@ public class RemoteStorage implements TransparentBytesStorage {
 
     @Override public TransparentBytesStorage set(long start, byte part) throws StorageSystemException {
         return set(start, new byte[] {part});
+    }
+
+    @Override public TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException {
+        return set(at, ByteArrayStorage.getConcatenated(parts));
     }
 
     @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {

@@ -88,6 +88,16 @@ public class SubBytesStorage extends SubStorage<byte[]> implements TransparentBy
         set(start, new byte[] {part});
         return this;
     }
+    @Override public TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException {
+        long delegate_size = delegate.contentSize();
+        int partsLength = 0;
+        for(byte[] part:parts) partsLength += part.length;
+        if(delegate_size + partsLength <= end) {
+            ((TransparentBytesStorage)delegate).set(this.start+at, parts);
+            return this;
+        }
+        throw new IndexOutOfBoundsException("Doesn't fit by "+((delegate_size+partsLength)-end)+" bytes");
+    }
     public SubBytesStorage append(byte[] val) throws StorageSystemException {
         return set(contentSize(), val);
     }
