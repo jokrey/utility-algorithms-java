@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 public class GenericPerformanceTest {
     public static byte[] generate_utf8_conform_byte_array(int size) {
         byte[] arr = new byte[size];
-        byte[] string = "hey. This is a test.".getBytes(StandardCharsets.UTF_8); //any character in the string has to be ascii - because ascii fits into a single byte.
+        byte[] string = "0123456789".getBytes(StandardCharsets.UTF_8); //any character in the string has to be ascii - because ascii fits into a single byte.
         for(int i=0;i<arr.length;i++) {
             arr[i] = string[i%string.length];
         }
