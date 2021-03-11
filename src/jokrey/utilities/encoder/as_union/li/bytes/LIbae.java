@@ -240,6 +240,8 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
 
     //SECONDARY LIBAE FUNCTIONALITY
     public static long getIntFromByteArray(byte[] bytearr, int from, int len) {
+        if(bytearr.length - from < len)
+            return -1;
         if(len < 8) {
             return BitHelper.getUIntFromNBytes(bytearr, from, len); //if smaller than 8 bytes, can only be positive
         } else {
