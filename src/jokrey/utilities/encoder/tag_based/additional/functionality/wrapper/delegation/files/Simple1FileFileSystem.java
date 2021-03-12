@@ -65,7 +65,7 @@ public class Simple1FileFileSystem implements AutoCloseable {
      */
     public void open(String file_path) throws FileNotFoundException {
         try {
-            open(new LITagBytesEncoder(new FileStorage(new File(file_path), 16384)), file_path);
+            open(new LITagBytesEncoder(new FileStorage(new File(file_path), 16384, "rw")), file_path);
         } catch (FileNotFoundException e) {
             throw e;
         } catch(Exception e) {

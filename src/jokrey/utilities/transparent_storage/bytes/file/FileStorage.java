@@ -16,6 +16,9 @@ import java.util.Arrays;
  *
  * Thread safe and reentrant for all methods.
  *
+ * Todo - evaluate performance of 'setLength', potentially there is an optimization where that data is kept in a header
+ *  The length of the RAF is then
+ *
  * @author jokrey
  */
 public class FileStorage implements TransparentBytesStorage {
@@ -34,23 +37,37 @@ public class FileStorage implements TransparentBytesStorage {
      *
      * @param file file to create and read from.
      * @param io_buffer_size buffer size to use for internal copy operations
+     * @param mode mode of the underlying RAF (see {@link RandomAccessFile#RandomAccessFile(File, String)})
      * @throws FileNotFoundException if the file cannot be created
      */
-    public FileStorage(File file, int io_buffer_size) throws FileNotFoundException {
-        raf= new RandomAccessFile(file, "rw");
+    public FileStorage(File file, int io_buffer_size, String mode) throws FileNotFoundException {
+        raf= new RandomAccessFile(file, mode);
 //        raf= new RandomAccessFile(file, "rwd"); //should maybe be used, but might make it less performant
         this.io_buffer_size=io_buffer_size;
     }
 
     /**
-     * Same as {@link FileStorage(File, int),
+     * Same as {@link FileStorage(File, int, String),
      *    but takes a standard io_buffer_size of 8192(2^13)
+     *
+     * @param file file to create and read from.
+     * @param mode mode of the underlying RAF (see {@link RandomAccessFile#RandomAccessFile(File, String)})
+     * @throws FileNotFoundException if the file cannot be created
+     */
+    public FileStorage(File file, String mode) throws FileNotFoundException {
+        this(file, 8192, mode);
+    }
+
+    /**
+     * Same as {@link FileStorage(File, int, String),
+     *    but takes a standard io_buffer_size of 8192(2^13)
+     *    and an optimistic RAF mode of 'rw'
      *
      * @param file file to create and read from.
      * @throws FileNotFoundException if the file cannot be created
      */
     public FileStorage(File file) throws FileNotFoundException {
-        this(file, 8192);
+        this(file, 8192, "rw");
     }
 
     /**

@@ -43,7 +43,7 @@ public class LITagBytesEncoderTest {
 
 
         File file = new File(System.getProperty("user.home") + "/Desktop/litbe_test.litbe");
-        FileStorage fcb_for_enc = new FileStorage(file, 32768);
+        FileStorage fcb_for_enc = new FileStorage(file, 32768, "rw");
 
         fcb_for_enc.setContent(new byte[]{});
         LITagBytesEncoder litbe_enc = new LITagBytesEncoder(fcb_for_enc);
