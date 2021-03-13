@@ -1,3 +1,9 @@
+lwl = dirty region start
+cole = dirty region end
+
+(This entire outline is no longer up to date, the algorithms have improved slightly)
+(It nonetheless can serve as a simpler introduction and is mildly interesting in itself)
+
 Variable Size Ring Buffer List
     Have a buffer of size n on disk with acid
     First 8 bytes are last write location (lwl) -  Initial = 16
