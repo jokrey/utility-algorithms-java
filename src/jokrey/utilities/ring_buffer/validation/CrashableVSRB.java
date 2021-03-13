@@ -1,11 +1,11 @@
 package jokrey.utilities.ring_buffer.validation;
 
 import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
-import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
+import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 
-public class CrashableVSRB extends VarSizedRingBuffer {
+public class CrashableVSRB extends VarSizedRingBufferQueueOnly {
     enum CrashPoint {
         AFTER_TRUNCATE, AFTER_WRITE_PRE, AFTER_WRITE_ELEMENT, AFTER_WRITE_AFTER
     }
@@ -34,8 +34,7 @@ public class CrashableVSRB extends VarSizedRingBuffer {
 
     //Returns whether the element was added
     public boolean append(byte[] e, CrashPoint crash) {
-        byte[] li = LIbae.generateLI(e.length);
-        int lieSize = li.length + e.length;
+        int lieSize = lieSize(e);
         long newDrEnd;
 
         long nextWriteStart = drStart;//start writing at dirty region
@@ -69,7 +68,7 @@ public class CrashableVSRB extends VarSizedRingBuffer {
         if(crash == CrashPoint.AFTER_TRUNCATE) {return true;}
         preCommit(newDrEnd, nextWriteStart, nextWriteEnd);
         if(crash == CrashPoint.AFTER_WRITE_PRE) {return true;}
-        writeElem(nextWriteStart, li, e);//write element with length indicator - can fail at anypoint internally
+        writeElem(nextWriteStart, e);//write element with length indicator - can fail at anypoint internally
         if(crash == CrashPoint.AFTER_WRITE_ELEMENT) {return true;}
         commit(nextWriteEnd, newDrEnd);//commit write element
         if(crash == CrashPoint.AFTER_WRITE_AFTER) {return true;}

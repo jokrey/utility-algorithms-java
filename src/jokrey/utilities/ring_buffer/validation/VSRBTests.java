@@ -2,7 +2,7 @@ package jokrey.utilities.ring_buffer.validation;
 
 import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.encoder.tag_based.tests.performance.GenericPerformanceTest;
-import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
+import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 import org.junit.Test;
@@ -30,8 +30,8 @@ public class VSRBTests {
 
     @Test
     public void wrapTestSimple() {
-        TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+10);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+10);
+        TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+10);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+10);
 
         afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
         afterWriteStateTest(store, vsrb, "2", Arrays.asList("1", "2"));
@@ -44,8 +44,8 @@ public class VSRBTests {
 
     @Test
     public void varSizeWrapAroundTesting() {
-        TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+11);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
+        TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+11);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+11);
 
         afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
         afterWriteStateTest(store, vsrb, "22", Arrays.asList("1", "22"));
@@ -54,8 +54,8 @@ public class VSRBTests {
         afterWriteStateTest(store, vsrb, "5", Arrays.asList("444", "5"));
         afterWriteStateTest(store, vsrb, "6", Arrays.asList("5", "6"));//NOTE - here 444, 5, 6 does not fit
 
-        store = new ByteArrayStorage(VarSizedRingBuffer.START+11);
-        vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
+        store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+11);
+        vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+11);
 
         afterWriteStateTest(store, vsrb, "444", Arrays.asList("444"));
         afterWriteStateTest(store, vsrb, "5", Arrays.asList("444", "5"));
@@ -71,23 +71,23 @@ public class VSRBTests {
 
     @Test
     public void restartWorks() {
-        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+11);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
+        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+11);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+11);
 
         afterWriteStateTest(store, vsrb, "4444", Arrays.asList("4444"));
         afterWriteStateTest(store, vsrb, "333", Arrays.asList("4444", "333"));
 
-        vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
+        vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+11);
         assertEquals(Arrays.asList("4444", "333"), VSBRDebugPrint.elementsToList(vsrb, String::new));
     }
 
-    public static void afterWriteStateTest(TransparentBytesStorage store, VarSizedRingBuffer vsrb, String toAdd, List<String> expectedTotalContent) {
+    public static void afterWriteStateTest(TransparentBytesStorage store, VarSizedRingBufferQueueOnly vsrb, String toAdd, List<String> expectedTotalContent) {
         boolean couldAdd = vsrb.append(toAdd.getBytes());//takes up 3 bytes
         if(!couldAdd) throw new IllegalArgumentException("element too large for vrsb: tooAdd("+toAdd+")");
         VSBRDebugPrint.printContents("After adding toAdd("+toAdd+")", vsrb, store, String::new);
         check(vsrb, expectedTotalContent);
     }
-    public static void check(VarSizedRingBuffer vsrb, List<String> expectedTotalContent) {
+    public static void check(VarSizedRingBufferQueueOnly vsrb, List<String> expectedTotalContent) {
         assertEquals(expectedTotalContent.size(), vsrb.size());//tests more the size function than anything else
         assertEquals(expectedTotalContent, VSBRDebugPrint.elementsToList(vsrb, String::new));
     }
@@ -95,8 +95,8 @@ public class VSRBTests {
 
     @Test
     public void wrongColeNotWrongTest() {
-        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+61);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+61);
+        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+61);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+61);
 
         vsrb.append(ByteArrayStorage.getConcatenated("2523456789012345678901234567890123456789012345".getBytes(), new byte[] {0,0}));
         VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
@@ -109,7 +109,7 @@ public class VSRBTests {
     public void notEnoughSpaceDetectedTest() {
         for (int i = 1; i < 100; i++) {
             TransparentBytesStorage store = new ByteArrayStorage(100);
-            VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, 100);
+            VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, 100);
             boolean couldNotAdd = vsrb.append(GenericPerformanceTest.generate_utf8_conform_byte_array(i));
             if(couldNotAdd) {
                 System.out.println("largest = " + i);
@@ -121,7 +121,7 @@ public class VSRBTests {
 
     public static void numTestNONWRAPPINGONLY(Function<Integer, byte[]> deterministicGenerator, int num, int max) {
         TransparentBytesStorage store = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
         for(int i=0;i<num;i++) {
             byte[] e = deterministicGenerator.apply(i);
@@ -152,7 +152,7 @@ public class VSRBTests {
     @Test
     public void fillItPrintItWrapIt() {
         String str = "abcdefghijklmnopqrstuvxyz0123456789";
-        for(int max = VarSizedRingBuffer.START + (str+"99").length()+ LIbae.generateLI((str+"99").length()).length; max<1000; max+=19) {
+        for(int max = VarSizedRingBufferQueueOnly.START + (str+"99").length()+ LIbae.generateLI((str+"99").length()).length; max<1000; max+=19) {
             for (int num = 0; num < 100; num++) {
                 numTestWRAPPING((vsrb, i) -> (i + str).getBytes(), num, max);
             }
@@ -167,15 +167,15 @@ public class VSRBTests {
         }
     }
 
-    public static byte[] utf8RandGen(VarSizedRingBuffer vsrb, int deterministicator) {
+    public static byte[] utf8RandGen(VarSizedRingBufferQueueOnly vsrb, int deterministicator) {
         Random r = new Random(Integer.hashCode(deterministicator));
         int size = r.nextInt((int) vsrb.calculateMaxSingleElementSize());
         return GenericPerformanceTest.generate_utf8_conform_byte_array(size);
     }
 
-    public static void numTestWRAPPING(BiFunction<VarSizedRingBuffer, Integer, byte[]> deterministicGenerator, int num, int max) {
+    public static void numTestWRAPPING(BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, int num, int max) {
         TransparentBytesStorage store = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
         System.out.println("\n\n\nmax("+max+"), num("+num+")");
         try {

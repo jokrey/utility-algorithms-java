@@ -1,6 +1,6 @@
 package jokrey.utilities.ring_buffer.validation;
 
-import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
+import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 import org.junit.Test;
@@ -18,8 +18,8 @@ import static org.junit.Assert.*;
 public class VSRBDeletionTests {
     @Test
     public void wrapTestWithDelete() {
-        TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+10);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+10);
+        TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+10);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+10);
 
         afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
         System.out.print("after write state test: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new, false);
@@ -68,8 +68,8 @@ public class VSRBDeletionTests {
 
     @Test
     public void appendAfterDeleteAppendsAtTheEnd() {
-        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+100);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+100);
+        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+100);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+100);
 
         vsrb.append("1".getBytes());
         vsrb.append("2".getBytes());
@@ -95,8 +95,8 @@ public class VSRBDeletionTests {
 
     @Test
     public void clearTest() {
-        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+11);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
+        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+11);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+11);
 
         afterWriteStateTest(store, vsrb, "4444", Arrays.asList("4444"));
         afterWriteStateTest(store, vsrb, "333", Arrays.asList("4444", "333"));
@@ -110,7 +110,7 @@ public class VSRBDeletionTests {
     public void deleteTest() {
         int max = 100;
         TransparentBytesStorage store = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
 
         VSBRDebugPrint.printContents("initial", vsrb, store, String::new);
@@ -132,9 +132,9 @@ public class VSRBDeletionTests {
 
     @Test
     public void furtherDeleteValidationsAndSanityChecks() {
-        int max = VarSizedRingBuffer.START + 7;
+        int max = VarSizedRingBufferQueueOnly.START + 7;
         TransparentBytesStorage store = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
         vsrb.append("1".getBytes());
         vsrb.append("2".getBytes());
@@ -159,9 +159,9 @@ public class VSRBDeletionTests {
 
     @Test
     public void furtherDeleteValidationsAndSanityChecks2() {
-        int max = VarSizedRingBuffer.START + 700;
+        int max = VarSizedRingBufferQueueOnly.START + 700;
         TransparentBytesStorage store = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
         vsrb.append("1".getBytes());
         vsrb.append("2".getBytes());
@@ -190,9 +190,9 @@ public class VSRBDeletionTests {
     }
 
 
-    public static void numTestWRAPPINGWithRandomDeletions(BiFunction<VarSizedRingBuffer, Integer, byte[]> deterministicGenerator, int num, int max) {
+    public static void numTestWRAPPINGWithRandomDeletions(BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, int num, int max) {
         TransparentBytesStorage store = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
         Random r = new Random(235663456);
 

@@ -2,7 +2,7 @@ package jokrey.utilities.ring_buffer.validation;
 
 import jokrey.utilities.command.line.helper.Argument;
 import jokrey.utilities.command.line.helper.CommandLoop;
-import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
+import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
 
@@ -10,9 +10,9 @@ import static jokrey.utilities.ring_buffer.validation.VSBRDebugPrint.elementsToL
 
 public class InteractiveEditor {
     public static void main(String[] a) {
-        int max = VarSizedRingBuffer.START + 20;
+        int max = VarSizedRingBufferQueueOnly.START + 20;
         TransparentBytesStorage storage = new ByteArrayStorage(max);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(storage, max);
+        VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(storage, max);
 
         CommandLoop loop = new CommandLoop();
         loop.addCommand("append", "append given data", Argument.with(String.class), args -> {

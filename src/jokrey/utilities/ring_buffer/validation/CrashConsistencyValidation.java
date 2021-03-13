@@ -2,7 +2,7 @@ package jokrey.utilities.ring_buffer.validation;
 
 import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.encoder.tag_based.tests.performance.GenericPerformanceTest;
-import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
+import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.ring_buffer.validation.CrashableVSRB.CrashPoint;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
@@ -17,7 +17,7 @@ import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static jokrey.utilities.ring_buffer.VarSizedRingBuffer.START;
+import static jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly.START;
 import static jokrey.utilities.ring_buffer.validation.VSRBTests.afterWriteStateTest;
 import static jokrey.utilities.ring_buffer.validation.VSRBTests.check;
 import static org.junit.Assert.*;
@@ -466,7 +466,7 @@ public class CrashConsistencyValidation {
             }
         }
     }
-    public void numTestWRAPPINGWithRandomDeletions(BiFunction<VarSizedRingBuffer, Integer, byte[]> deterministicGenerator, int num, int max) {
+    public void numTestWRAPPINGWithRandomDeletions(BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, int num, int max) {
         TransparentBytesStorage store = new ByteArrayStorage(max);
         CrashableVSRB vsrb = new CrashableVSRB(store, max);
 
@@ -527,7 +527,7 @@ public class CrashConsistencyValidation {
         }
     }
 
-    public static byte[] utf8RandGenDifferentToLast(VarSizedRingBuffer vsrb, int deterministicator) {
+    public static byte[] utf8RandGenDifferentToLast(VarSizedRingBufferQueueOnly vsrb, int deterministicator) {
         byte[] deterministicatorBytes = (deterministicator+"").getBytes(StandardCharsets.UTF_8);//these deterministicator
         Random r = new Random(Integer.hashCode(deterministicator));
         int size = r.nextInt((int) vsrb.calculateMaxSingleElementSize()-1)+1;//cannot have length 0 arrays, because these generated arrays must all be different(same length fine), so that

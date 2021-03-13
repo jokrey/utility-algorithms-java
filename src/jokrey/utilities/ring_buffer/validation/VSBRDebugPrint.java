@@ -1,17 +1,17 @@
 package jokrey.utilities.ring_buffer.validation;
 
 import jokrey.utilities.bitsandbytes.BitHelper;
-import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
+import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static jokrey.utilities.ring_buffer.VarSizedRingBuffer.START;
+import static jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly.START;
 
 public class VSBRDebugPrint {
-    public static void printContents(String ident, VarSizedRingBuffer vsrb, TransparentBytesStorage underlyingStorageOfVSBR,
+    public static void printContents(String ident, VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage underlyingStorageOfVSBR,
                                      Function<byte[], String> elemTransformer) {
         byte[] headerBytes = underlyingStorageOfVSBR.sub(0, START);
         long drStart = BitHelper.getInt64From(headerBytes, 0);
@@ -42,20 +42,20 @@ public class VSBRDebugPrint {
             System.out.println("vsrb elements(conv) = "+ elementsToList(vsrb, elemTransformer));
     }
 
-    public static List<String> elementsToList(VarSizedRingBuffer vsrb, Function<byte[], String> elemTransformer) {
+    public static List<String> elementsToList(VarSizedRingBufferQueueOnly vsrb, Function<byte[], String> elemTransformer) {
         return vsrb.iterator().collect().stream().map(elemTransformer).collect(Collectors.toList());
     }
 
-    public static void printMemoryLayout(VarSizedRingBuffer vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer) {
+    public static void printMemoryLayout(VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer) {
         printMemoryLayout(vsrb, underlyingStorageOfVSBR, elemTransformer, true);
     }
-    public static void printMemoryLayout(VarSizedRingBuffer vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer, boolean convertToStart) {
+    public static void printMemoryLayout(VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer, boolean convertToStart) {
         byte[] headerBytes = underlyingStorageOfVSBR.sub(0, START);
         long drS = BitHelper.getInt64From(headerBytes, 0);
         long drE = BitHelper.getInt64From(headerBytes, 8);
         printMemoryLayout(vsrb, underlyingStorageOfVSBR, elemTransformer, drS, drE, convertToStart);
     }
-    private static void printMemoryLayout(VarSizedRingBuffer vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer, long drS, long drE, boolean convertToStart) {
+    private static void printMemoryLayout(VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer, long drS, long drE, boolean convertToStart) {
         int convSub = convertToStart?START:0;
         System.out.print("memoryLayout("+(underlyingStorageOfVSBR.contentSize() - convSub)+"/"+(vsrb.max- convSub)+"): "+(drS - convSub)+","+(drE - convSub)+"{");
         long p = START;
@@ -63,7 +63,7 @@ public class VSBRDebugPrint {
         while(p < underlyingStorageOfVSBR.contentSize()) {
             if(p == virtualLwl) p = drE;//skip dirty region
 
-            long[] liBounds = vsrb.readLIBoundsAt(p);
+            long[] liBounds = vsrb.readForwardLIBoundsAt(p);
             if(liBounds==null)break;
             byte[] e = underlyingStorageOfVSBR.sub(liBounds[0], liBounds[1]);
             System.out.print((elemTransformer == null?"@bytes": elemTransformer.apply(e))+"["+(p - convSub)+", "+(liBounds[0] - convSub)+", "+(liBounds[1] - convSub)+"], ");
