@@ -198,6 +198,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
 
     @Override public byte[] sub(long start, long end) throws StorageSystemException {
         if (end > size) end = size; //to satisfy interface doc condition
+        if (start < 0) start = 0;
         int len = (int) (end - start);
         if (len > 0) {
             byte[] sub = new byte[len];

@@ -129,6 +129,7 @@ public class ByteArrayStorageLegacy extends ByteArrayOutputStream implements Tra
 
     @Override public byte[] sub(long start, long end) throws StorageSystemException {
         if(end > count)end=count; //to satisfy interface doc condition
+        if (start < 0) start = 0; //to satisfy interface doc condition
         int len = (int) (end - start);
         if (len > 0) {
             byte[] part = new byte[(int) (end - start)];

@@ -45,7 +45,7 @@ public class SubStorage<SF> implements TransparentStorage<SF> {
     }
 
     @Override public SF sub(long start, long end) {
-        if(end<=this.end)
+        if(start>=this.start&&end<=this.end)
             return delegate.sub(start-this.start, end-this.start);
         throw new IndexOutOfBoundsException();
     }

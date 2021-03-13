@@ -249,6 +249,7 @@ public class FileStorage implements TransparentBytesStorage {
     @Override public byte[] sub(long start, long end_given) throws StorageSystemException {
         long size = contentSize();
         long end = Math.min(end_given, size); //to satisfy interface doc condition
+        if (start < 0) start = 0; //to satisfy interface doc condition
         try {
             long len = end - start;
             if (len > 0) {

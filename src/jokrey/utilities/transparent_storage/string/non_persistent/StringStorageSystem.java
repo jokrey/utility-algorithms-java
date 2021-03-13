@@ -49,6 +49,8 @@ public class StringStorageSystem implements StringStorage {
         return this;
     }
     @Override public String sub(long start, long end) {
+        if (end > content.length()) end = content.length(); //to satisfy interface doc condition
+        if (start < 0) start = 0; //to satisfy interface doc condition
         return content.substring((int) start, (int) end);
     }
     @Override public StringStorageSystem set(long start, String part, int off, int len) {
