@@ -75,4 +75,7 @@ public class CrashableVSRB extends VarSizedRingBuffer {
         if(crash == CrashPoint.AFTER_WRITE_AFTER) {return true;}
         return true;
     }
+
+    //not required to validate delete and clear in tests
+    //  use only one write and one truncate is validated in logic
 }
