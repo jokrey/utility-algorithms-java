@@ -161,9 +161,6 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
             long[] liBounds = readForwardLIBoundsAt(newDrEnd);
             newDrEnd = (liBounds == null ? storage.contentSize() : liBounds[1] + calculatePostLIeOffset(liBounds));
 
-            if ((drEnd == newDrEnd || drEnd == oldContentSize) && drStart == newDrStart && (drStart < storage.contentSize()))
-                return false; //based on the above checks we know that we cannot delete anything, since everything has been deleted
-
             if (newDrEnd == storage.contentSize() && (newDrStart == START || newDrStart == storage.contentSize())) {
                 //if the entire buffer is now a dirty region, truncate everything
                 clear();
