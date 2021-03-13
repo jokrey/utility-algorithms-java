@@ -168,15 +168,6 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
         return get_next_li_bounds(cache, 0, i, content_size);
     }
 
-
-    /**
-     * @param data Complete data in which the li boundaries are to be found
-     * @param offset latest index in the data
-     * @return Length indicated indices. The range between those indices is the encoded, connected data.
-     */
-    public static long[] get_next_li_bounds(byte[] data, int offset) {
-        return get_next_li_bounds(data, offset, offset, data.length);
-    }
     /**
      * @param partialData all or partial data
      * @param partialDataOffset offset in the partial data
@@ -185,7 +176,7 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
      * @return Length indicated indices. The range between those indices is the encoded, connected data.
      */
     public static long[] get_next_li_bounds(byte[] partialData, int partialDataOffset, long li_offset, long totalDataSize) {
-        if(partialDataOffset >= totalDataSize) return null; // added - tested, but potentially not sufficiently
+        if(partialDataOffset >= totalDataSize) return null;
 
         byte leading_li = partialData[partialDataOffset];
 
@@ -201,6 +192,9 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
         return (byte) Math.max(0, Math.ceil(Math.floor((Math.log(length)/Math.log(2)) + 1) / 8));
     }
     public static byte[] generateLI(long length) {
+        //todo - there is an optimization here, where we use only 1 byte for elements of size 255-8 or less
+        //       this limits support to numbers with only 8 byte, but that is reasonable anyways
+        //       Note: this change breaks all previously encoded data
         byte li_byte_count = getLeadingLIFor(length);
         byte[] li_bytes = new byte[li_byte_count + 1];
         li_bytes[0] = li_byte_count;//cast possible because it cannot be more than 8 anyways. - TODO this wastes 5 bit: 2^3 = 8, but 3 bit would be enough to encode the information...
@@ -264,4 +258,38 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
 //            return ByteBuffer.wrap(less_bytes).getLong();
 //        }
 //    }
+
+    /**
+     * @param partialData all or partial data
+     * @param partialDataOffset offset in the partial data
+     * @param li_offset latest index in the data
+     * @param totalDataSize last index of total data(+1) of which partial data is a part of
+     * @return Length indicated indices. The range between those indices is the encoded, connected data.
+     */
+    public static long[] get_next_reverse_li_bounds(byte[] partialData, int partialDataOffset, long li_offset, long totalDataSize) {
+        if(partialDataOffset < 0) return null;
+
+        byte leading_li = partialData[partialDataOffset];
+
+        long lengthIndicator_asInt = getIntFromByteArray(partialData,  partialDataOffset-leading_li, leading_li);
+        if(lengthIndicator_asInt==-1 || li_offset+lengthIndicator_asInt>totalDataSize)
+            return null;
+        li_offset-=leading_li + 1; //to skip the li information.
+        return new long[]{li_offset - lengthIndicator_asInt, li_offset};
+    }
+
+    /**
+     * Always has the same size as {@link #generateLI(long)}
+     * Functionally the same as reverseArray(generateLI(length)), though slightly more efficiently implemented
+     * @param length num bytes to indicate
+     * @return the li in bytes
+     */
+    public static byte[] generateReverseLI(long length) {
+        byte li_byte_count = getLeadingLIFor(length);
+        byte[] li_bytes = new byte[li_byte_count + 1];
+        li_bytes[li_bytes.length-1] = li_byte_count;//cast possible because it cannot be more than 8 anyways. - TODO this wastes 5 bit: 2^3 = 8, but 3 bit would be enough to encode the information...
+        for(int n=0;n<li_bytes.length-1;n++)
+            li_bytes[n] = BitHelper.getByte(length, (li_bytes.length-2)-n);
+        return li_bytes;
+    }
 }
