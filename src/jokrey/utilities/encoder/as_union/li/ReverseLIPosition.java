@@ -8,32 +8,35 @@ import java.util.Objects;
 /**
  * @author jokrey
  */
-public class LIPosition extends Position {
+public class ReverseLIPosition extends Position {
+    public final long minimum;
     public long pointer;
-    public LIPosition(long pointer) {
+    public ReverseLIPosition(long pointer, long minimum) {
         this.pointer = pointer;
+        this.minimum = minimum;
     }
     @Override public boolean hasNext(TransparentStorage storage) {
-        return pointer < storage.contentSize();
+        return pointer > minimum;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        LIPosition that = (LIPosition) o;
-        return pointer == that.pointer;
+        ReverseLIPosition that = (ReverseLIPosition) o;
+        return minimum == that.minimum && pointer == that.pointer;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pointer);
+        return Objects.hash(minimum, pointer);
     }
 
     @Override
     public String toString() {
-        return "LIPosition{" +
-                "pointer=" + pointer +
+        return "ReverseLIPosition{" +
+                "minimum=" + minimum +
+                ", pointer=" + pointer +
                 '}';
     }
 }

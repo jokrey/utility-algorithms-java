@@ -4,6 +4,7 @@ import jokrey.utilities.bitsandbytes.BitHelper;
 import jokrey.utilities.encoder.EncodableAsBytes;
 import jokrey.utilities.encoder.as_union.li.LIPosition;
 import jokrey.utilities.encoder.as_union.li.LIe;
+import jokrey.utilities.encoder.as_union.li.ReverseLIPosition;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.TransparentStorage;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
@@ -263,20 +264,29 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
 //        }
 //    }
 
+    protected long[] get_next_reverse_li_bounds(ReverseLIPosition start_pos, TransparentStorage<byte[]> contentBuilder) throws StorageSystemException {
+        long i = start_pos.pointer;
+        if(i-1 <= 0)
+            return null;
+        byte[] cache = contentBuilder.sub(i-9, i); //cache maximum number of required bytes. (to minimize possibly slow sub calls)
+
+        return get_next_reverse_li_bounds(cache, 0, i, start_pos.minimum);
+    }
+
     /**
      * @param partialData all or partial data
      * @param partialDataOffset offset in the partial data
      * @param li_offset latest index in the data
-     * @param totalDataSize last index of total data(+1) of which partial data is a part of
+     * @param minimum first index of total data of which partial data is a part of (usually 0, or header-offset)
      * @return Length indicated indices. The range between those indices is the encoded, connected data.
      */
-    public static long[] get_next_reverse_li_bounds(byte[] partialData, int partialDataOffset, long li_offset, long totalDataSize) {
+    public static long[] get_next_reverse_li_bounds(byte[] partialData, int partialDataOffset, long li_offset, long minimum) {
         if(partialDataOffset < 0) return null;
 
         byte leading_li = partialData[partialDataOffset];
 
         long lengthIndicator_asInt = getIntFromByteArray(partialData,  partialDataOffset-leading_li, leading_li);
-        if(lengthIndicator_asInt==-1 || li_offset+lengthIndicator_asInt>totalDataSize)
+        if(lengthIndicator_asInt==-1 || li_offset-lengthIndicator_asInt < minimum)
             return null;
         li_offset-=leading_li + 1; //to skip the li information.
         return new long[]{li_offset - lengthIndicator_asInt, li_offset};
@@ -295,5 +305,29 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
         for(int n=0;n<li_bytes.length-1;n++)
             li_bytes[n] = BitHelper.getByte(length, (li_bytes.length-2)-n);
         return li_bytes;
+    }
+
+    public long reverseSkipEntry(ReverseLIPosition pos) {
+        long[] startIndex_endIndex_ofNextLI = get_next_reverse_li_bounds(pos, getStorageSystem());
+        if(startIndex_endIndex_ofNextLI != null) {
+            pos.pointer = startIndex_endIndex_ofNextLI[1];
+            return startIndex_endIndex_ofNextLI[1] - startIndex_endIndex_ofNextLI[0];
+        }
+        return -1;
+    }
+
+    public byte[] reverseDecode(ReverseLIPosition pos, boolean delete_decoded) {
+        long[] startIndex_endIndex_ofNextLI = get_next_reverse_li_bounds(pos, getStorageSystem());
+        if(startIndex_endIndex_ofNextLI != null) {
+            byte[] decoded = getStorageSystem().sub(startIndex_endIndex_ofNextLI[0], startIndex_endIndex_ofNextLI[1]);
+            if(delete_decoded) {
+                getStorageSystem().delete(startIndex_endIndex_ofNextLI[0], pos.pointer);
+            } else {
+                pos.pointer = startIndex_endIndex_ofNextLI[0];
+            }
+            return decoded;
+        } else {
+            return null;
+        }
     }
 }
