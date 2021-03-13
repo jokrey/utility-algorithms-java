@@ -1,5 +1,6 @@
 package jokrey.utilities.ring_buffer.validation;
 
+import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.encoder.tag_based.tests.performance.GenericPerformanceTest;
 import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
@@ -7,9 +8,10 @@ import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorag
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,7 +21,7 @@ public class VSRBTests {
     @Test
     public void simpleElementsTest() {
         byte[] e = "elem".getBytes();
-        numTestNONWRAPPINGONLY(i->e, 100, 1024);
+        numTestNONWRAPPINGONLY(i->e, 10, 100);
     }
     @Test
     public void fillItPrintIt() {
@@ -76,33 +78,45 @@ public class VSRBTests {
         afterWriteStateTest(store, vsrb, "333", Arrays.asList("4444", "333"));
 
         vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
-        assertEquals(Arrays.asList("4444", "333"), vsrb.iterator().collect().stream().map(String::new).collect(Collectors.toList()));
+        assertEquals(Arrays.asList("4444", "333"), VSBRDebugPrint.elementsToList(vsrb, String::new));
     }
 
     public static void afterWriteStateTest(TransparentBytesStorage store, VarSizedRingBuffer vsrb, String toAdd, List<String> expectedTotalContent) {
-        vsrb.append(toAdd.getBytes());//takes up 3 bytes
-        VSBRDebugPrint.printContents(vsrb, store, String::new);
+        boolean couldAdd = vsrb.append(toAdd.getBytes());//takes up 3 bytes
+        if(!couldAdd) throw new IllegalArgumentException("element too large for vrsb: tooAdd("+toAdd+")");
+        VSBRDebugPrint.printContents("After adding toAdd("+toAdd+")", vsrb, store, String::new);
         check(vsrb, expectedTotalContent);
     }
     public static void check(VarSizedRingBuffer vsrb, List<String> expectedTotalContent) {
         assertEquals(expectedTotalContent.size(), vsrb.size());//tests more the size function than anything else
-        assertEquals(expectedTotalContent, vsrb.iterator().collect().stream().map(String::new).collect(Collectors.toList()));
+        assertEquals(expectedTotalContent, VSBRDebugPrint.elementsToList(vsrb, String::new));
     }
 
 
     @Test
+    public void wrongColeNotWrongTest() {
+        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+61);
+        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+61);
+
+        vsrb.append(ByteArrayStorage.getConcatenated("2523456789012345678901234567890123456789012345".getBytes(), new byte[] {0,0}));
+        VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
+
+        vsrb.append(ByteArrayStorage.getConcatenated("2923456789012345678901234567890123".getBytes(), new byte[] {0,0}));
+        VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
+    }
+
+    @Test
     public void notEnoughSpaceDetectedTest() {
-        int i = 1;
-        try {
-            for (; i < 100; i++) {
-                TransparentBytesStorage store = new ByteArrayStorage(100);
-                VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, 100);
-                vsrb.append(GenericPerformanceTest.generate_utf8_conform_byte_array(i));
+        for (int i = 1; i < 100; i++) {
+            TransparentBytesStorage store = new ByteArrayStorage(100);
+            VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, 100);
+            boolean couldNotAdd = vsrb.append(GenericPerformanceTest.generate_utf8_conform_byte_array(i));
+            if(couldNotAdd) {
+                System.out.println("largest = " + i);
+                return;//success
             }
-            fail("too small not called");
-        } catch (IllegalArgumentException ignore) {
-            System.out.println("element size(bytes) of first not fitting = " + i);
-        }//success
+        }
+        fail("too small not called");
     }
 
     public static void numTestNONWRAPPINGONLY(Function<Integer, byte[]> deterministicGenerator, int num, int max) {
@@ -112,7 +126,7 @@ public class VSRBTests {
         for(int i=0;i<num;i++) {
             byte[] e = deterministicGenerator.apply(i);
             vsrb.append(e);
-            VSBRDebugPrint.printContents(vsrb, store, String::new);
+            VSBRDebugPrint.printContents("after appending e("+new String(e)+")", vsrb, store, String::new);
 
             Iterator<byte[]> iterator = vsrb.iterator();
             int startFinder = 0;
@@ -137,9 +151,10 @@ public class VSRBTests {
 
     @Test
     public void fillItPrintItWrapIt() {
-        for(int max=55;max<1000;max+=19) {
+        String str = "abcdefghijklmnopqrstuvxyz0123456789";
+        for(int max = VarSizedRingBuffer.START + (str+"99").length()+ LIbae.generateLI((str+"99").length()).length; max<1000; max+=19) {
             for (int num = 0; num < 100; num++) {
-                numTestWRAPPING(i -> (i + "abcdefghijklmnopqrstuvxyz0123456789").getBytes(), 100, 1024);
+                numTestWRAPPING((vsrb, i) -> (i + str).getBytes(), num, max);
             }
         }
     }
@@ -147,46 +162,55 @@ public class VSRBTests {
     public void fillItPrintItWrapItVarSized() {
         for(int max=55;max<1000;max+=19) {
             for (int num = 0; num < 100; num++) {
-                numTestWRAPPING(i -> GenericPerformanceTest.generate_utf8_conform_byte_array(i+10), 100, 1024);
+                numTestWRAPPING(VSRBTests::utf8RandGen, num, max);
             }
         }
     }
-    public static void numTestWRAPPING(Function<Integer, byte[]> deterministicGenerator, int num, int max) {
+
+    public static byte[] utf8RandGen(VarSizedRingBuffer vsrb, int deterministicator) {
+        Random r = new Random(Integer.hashCode(deterministicator));
+        int size = r.nextInt((int) vsrb.calculateMaxSingleElementSize());
+        return GenericPerformanceTest.generate_utf8_conform_byte_array(size);
+    }
+
+    public static void numTestWRAPPING(BiFunction<VarSizedRingBuffer, Integer, byte[]> deterministicGenerator, int num, int max) {
         TransparentBytesStorage store = new ByteArrayStorage(max);
         VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, max);
 
+        System.out.println("\n\n\nmax("+max+"), num("+num+")");
         try {
             for (int i = 0; i < num; i++) {
-                byte[] e = deterministicGenerator.apply(i);
-                vsrb.append(e);
-//                VSBRDebugPrint.printContents(vsrb, store, String::new);
+                byte[] e = deterministicGenerator.apply(vsrb, i);
+//                System.out.println("generated("+i+") = " + new String(e));
+                boolean couldAdd = vsrb.append(e);
+                if(!couldAdd)
+                    throw new IllegalArgumentException("deterministicGenerator generated an element too large: (num("+num+"), max("+max+"), e.length("+e.length+"))");
+
+//                System.out.println("added("+i+") = " + new String(e));
+//                VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
+                assertFalse(vsrb.isEmpty());
 
                 List<byte[]> iterator = vsrb.iterator().collect();
+//                System.out.println("iterator = " + iterator.stream().map(String::new).collect(Collectors.toList()));
                 for (int ii = 0; ii < iterator.size(); ii++) {
-                    byte[] gen = deterministicGenerator.apply(i - ii);
+                    byte[] gen = deterministicGenerator.apply(vsrb, i - ii);
                     byte[] got = iterator.get(iterator.size() - (ii + 1));
-                    assertArrayEquals(gen, got);
+                    try {
+                        assertArrayEquals(gen, got);
+                    } catch (Throwable t) {
+                        System.out.println("i = " + i);
+                        System.out.println("ii = " + ii);
+                        System.out.println("iterator = " + iterator.stream().map(String::new).collect(Collectors.toList()));
+                        System.out.println("gen("+(i - ii)+") = " + new String(gen));
+                        System.out.println("got("+(iterator.size() - (ii + 1))+") = " + new String(got));
+                        VSBRDebugPrint.printContents("After array equality fail ", vsrb, store, String::new);
+                        throw t;
+                    }
                 }
-//                System.out.println("e.length = " + e.length);
             }
-            System.out.println("vsrb.iterator().collect().size() = " + vsrb.iterator().collect().size());
         } finally {
-            VSBRDebugPrint.printContents(vsrb, store, String::new);
+//            VSBRDebugPrint.printContents(vsrb, store, String::new);
+            System.out.println("vsrb.size() = " + vsrb.size());
         }
-    }
-
-
-
-    @Test
-    public void clearTest() {
-        ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBuffer.START+11);
-        VarSizedRingBuffer vsrb = new VarSizedRingBuffer(store, VarSizedRingBuffer.START+11);
-
-        afterWriteStateTest(store, vsrb, "4444", Arrays.asList("4444"));
-        afterWriteStateTest(store, vsrb, "333", Arrays.asList("4444", "333"));
-
-        vsrb.clear();
-
-        check(vsrb, Collections.emptyList());
     }
 }

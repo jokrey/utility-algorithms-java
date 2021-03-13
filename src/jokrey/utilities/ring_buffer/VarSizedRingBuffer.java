@@ -4,6 +4,7 @@ import jokrey.utilities.bitsandbytes.BitHelper;
 import jokrey.utilities.encoder.as_union.li.LIPosition;
 import jokrey.utilities.encoder.as_union.li.bytes.LIbae;
 import jokrey.utilities.simple.data_structure.ExtendedIterator;
+import jokrey.utilities.simple.data_structure.queue.Queue;
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import jokrey.utilities.transparent_storage.bytes.non_persistent.ByteArrayStorage;
@@ -13,12 +14,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * A fifo auto-queue on disk(or at least auto serialized)
+ * A capacitated fifo queue on storage
+ * or
+ * A ring buffer on storage
  *
- * todo: reverse iteration (done by adding a reverse li(leading_li must be at the end) to the end (double linked))
- *                          start point of reverse iteration is lwl(because just before that will be the reverse-li)
+ * Has atomicity guarantees for append, read and delete - as long as the underlying storage has them also for single ops
+ *
+ * Assumptions:
+ *  Max bytes are readily available. The buffer is not optimized towards setting the content below max, after using it.
+ *  Occasionally it has to, but usually it does not
+ *
+ * todo: reverse iteration (
+ *    - done by adding a reverse li(leading_li must be at the end) to the end (double linked)
+ *    - start point of reverse iteration is drStart(because just before that will be the reverse-li)
+ *  )
+ *  todo delete latest
  */
-public class VarSizedRingBuffer {
+public class VarSizedRingBuffer implements Queue<byte[]> {
     public final long max;
 
     protected final TransparentBytesStorage storage;
@@ -44,99 +56,168 @@ public class VarSizedRingBuffer {
     /**
      * Append the given element to the end of this buffer,
      *   the new element will be overwritten later than any other elements previously in the buffer
+     * @return false if the element was too large to be added, true otherwise
      * @throws IllegalArgumentException if given element does not fit buffer(i.e. max < START + li(e) + |e|)
      * @throws IllegalStateException if the underlying data is corrupt and does not represent a vsrb
      */
-    public void append(byte[] e) {
+    public boolean append(byte[] e) {
         rwLock.writeLock().lock();
         try {
             byte[] li = LIbae.generateLI(e.length);
             int lieSize = li.length + e.length;
-//            System.out.println("write(e) before - lwl(" + lwl+"), cole("+cole+"), lieSize("+lieSize+")");
+            long newDrEnd;
 
-            //calc new-lwl
-            long newLwl = lwl + lieSize;
-            if (newLwl > max) {
-                newLwl = START + lieSize;
-                if(newLwl > max)
-                    throw new IllegalArgumentException("element to large");
-                if (cole > lwl)//only if not recovering
-                    truncateToCOLE();
+            long nextWriteStart = drStart;//start writing at dirty region
+            long nextWriteEnd = nextWriteStart + lieSize;
+            if (nextWriteEnd > max) {//if our write has to wrap
+                nextWriteStart = START;
+                nextWriteEnd = nextWriteStart + lieSize;
+                if(nextWriteEnd > max)//cannot fit
+                    return false;
+
+                truncateToDirtyRegionStart(); //truncate to previous dirty region start, because that is the last written location
+
+                if(Math.max(drEnd, nextWriteEnd) < drStart) //if we were in an appending mode before, but drEnd was earlier (indicates crash, or deleted first element)
+                    newDrEnd = drEnd; //then the dirty region cannot end earlier than drEnd - can end later,
+                else
+                    newDrEnd = searchNextLIEndAfter(START, nextWriteEnd); //search from start for next li end after writeEnd
+            } else if (drEnd > nextWriteEnd) { // write is an overwrite, but fits the dirty region
+                newDrEnd = drEnd;
+            } else { //write is an overwrite, and the currently element does not fit the dirty region
+                if(drEnd < drStart) //if drEnd < drStart -> dirty region = [START, drEnd] && drStart==contentSize()
+                    newDrEnd = drEnd;//dr start will be written on commit (or reset if this change does not happen) - but drEnd shall not change
+                else
+                    newDrEnd = searchNextLIEndAfter(drEnd, nextWriteEnd);//we know that at drEnd there is an li - the earliest element we are overwriting now
             }
 
-            //calc new-cole
-            long newCole;
-            if (cole == storage.contentSize()) {
-                if (newLwl >= storage.contentSize()) {
-                    newCole = newLwl;
+
+
+            preCommit(newDrEnd, nextWriteStart, nextWriteEnd);
+            writeElem(nextWriteStart, li, e);//write element with length indicator - can fail at anypoint internally
+            commit(nextWriteEnd, newDrEnd);//commit write element
+            return true;
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
+    protected long searchNextLIEndAfter(long startAt, long minResult) {
+        if(minResult >= storage.contentSize()) {//this write will append
+            return minResult;
+        } else {
+            while (startAt < minResult) { // we jump from li to li, until we encompass the nextWriteEnd
+                long[] liBounds = readLIBoundsAt(startAt);
+                if (liBounds == null) {//if we cannot read any the next li (for example eof, or writing for the first time)
+                    return minResult;
                 } else {
-                    long[] liBounds = readLIBoundsAt(START);
-                    if(liBounds == null) throw new IllegalStateException("could not read li at start (corrupt data)");
-                    newCole = liBounds[1];
+                    startAt = liBounds[1];
                 }
+            }
+        }
+        return startAt;
+    }
+
+    /**
+     * @return whether anything was deleted (only nothing deleted if empty)
+     */
+    public boolean deleteFirst() {
+        rwLock.writeLock().lock();
+        try {
+            if (drStart == START && drEnd == START) return false; //cannot delete empty
+
+            long oldContentSize = storage.contentSize();
+            long newDrEnd = drEnd;
+            long newDrStart = drStart;
+            if (drEnd == oldContentSize) {//if dirty region ends at old content size -> WRAP(i.e. delete at the start)
+                //on crash between truncate and writeCole, or if never wrapped write, or if dirtyRegion empty and contentSize() == max
+                newDrEnd = START;
+
+                if (drEnd > drStart) { //only if nothing deleted yet, if drStart is at content size, we want to write more stuff before overwriting
+                    truncateToDirtyRegionStart();//we just wrapped, we need to set content size to oldDrStart, because we don't want to read over it every
+                    //if we crash between here and writePost, then we do not delete and:
+                    //  -> after recover drStart==drEnd==contentSize()
+                    //     on read: drEnd==contentSize() -> read from start
+                    //     on write: drEnd=contentSize() -> drStart=contentSize() -> append at contentSize
+                    //        which is correct, since earliest was not deleted
+                    newDrStart = START;
+                }
+            }
+
+            long[] liBounds = readLIBoundsAt(newDrEnd);
+            newDrEnd = (liBounds == null ? storage.contentSize() : liBounds[1]);
+
+            if ((drEnd == newDrEnd || drEnd == oldContentSize) && drStart == newDrStart && (drStart < storage.contentSize()))
+                return false; //based on the above checks we know that we cannot delete anything, since everything has been deleted
+
+            if (newDrEnd == storage.contentSize() && (newDrStart == START || newDrStart == storage.contentSize())) {
+                //if the entire buffer is now a dirty region, truncate everything
+                clear();
             } else {
-                newCole = cole;
+                commit(newDrStart, newDrEnd); //increase dirty region by 1 li element
             }
-            while (newLwl > newCole) {
-                if(newCole >= storage.contentSize()) {
-                    newCole = newLwl;
-                } else {
-                    long[] liBounds = readLIBoundsAt(newCole);
-                    //the following line should never be called, unless corrupt archive - because newCole just jumps and writeAt is always in bounds
-                    if (liBounds == null) {
-                        System.out.println("liBounds == null ");
-//                        System.out.println("cole = " + cole);
-//                        System.out.println("lwl = " + lwl);
-//                        System.out.println("newCole = " + newCole);
-//                        System.out.println("newLwl = " + newLwl);
-//                        System.out.println("lieSize = " + lieSize);
-//                        System.out.println("contentSize = " + storage.contentSize());
-//                        throw new IllegalStateException("could not read li at newCole(" + newCole + ") (corrupt data)");
-                        //occurs
-                        newCole = storage.contentSize();
-                    } else {
-                        newCole = liBounds[1];
-                    }
-                }
-            }
-
-            long writeAt = newLwl - lieSize;
-            //write order hella important for free and automatic crash recovery
-            writePre(newCole, newLwl, writeAt);
-            writeElem(writeAt, li, e); //(newLwl - lieSize) often(*) == lwl
-            writePost(newCole, newLwl);
-//            System.out.println("write(e) after - lwl(" + lwl+"), cole("+cole+"), lieSize("+lieSize+"), at("+(newLwl - lieSize)+")");
+            return true;
         } finally {
             rwLock.writeLock().unlock();
         }
     }
 
     /**
-     * Any single read operation will be read locked.
+     * Clears this buffer, might change the size of the underlying storage.
+     */
+    public void clear() {
+        rwLock.writeLock().lock();
+        try {
+            drStart = drEnd = START;
+            storage.setContent(ByteArrayStorage.getConcatenated(
+                BitHelper.getBytes((long) START), BitHelper.getBytes((long) START),
+                BitHelper.getBytes(-1L), BitHelper.getBytes(-1L)
+            ));
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * TODO - this is not thread safe...
+     *      Any single read operation will be read locked.
+     *      BUT, the pointer location might be invalid as heck, if we come to it again after a write.
+     *      This is NOT necessarily even detected (could be valid(ish) coincidentally -> return junk data)
      * @return an extended iterator capable of next, hasNext and skip (delete is not supported)
      */
     public ExtendedIterator<byte[]> iterator() {
         rwLock.readLock().lock();
         try {
+            // This iterator will read from dirty region end, wrapping once around until dirty region start
+            // if dirty region end == dirty region start it will iterate in a circle, from that dirty region
+
+            long oldContentSize = storage.contentSize();//NOT THREAD SAFE ANYWAYS - this make it actually a little more safe (though insufficiently
+
             LIbae decoder = new LIbae(storage);
-            AtomicBoolean wrapReadAllowed;
-            LIPosition iter;
-            if (cole == storage.contentSize()) {
-                //on crash between truncate and writeCole, or if never wrapped write, or if dirtyRegion empty and contentSize() == max
-                wrapReadAllowed = new AtomicBoolean(false);
-                iter = new LIPosition(START);
-            } else {
-                wrapReadAllowed = new AtomicBoolean(true);
-                iter = new LIPosition(cole);
-            }
+            AtomicBoolean wrapReadAllowed = new AtomicBoolean(true);
+            LIPosition iter = new LIPosition(drEnd);
             return new ExtendedIterator<byte[]>() {
+                boolean readHasAlreadyWrapped() {
+                    return !wrapReadAllowed.get();
+                }
+                boolean dirtyRegionEndsAtStart() {
+                    return drStart == oldContentSize && drStart > drEnd;
+                }
+                boolean reachedEnd() {
+                    long virtualDirtyRegionStart = dirtyRegionEndsAtStart() ? VarSizedRingBuffer.START : drStart;
+                    return readHasAlreadyWrapped() && iter.pointer == virtualDirtyRegionStart;
+                }
+                void wrap() {
+                    wrapReadAllowed.set(false);
+                    iter.pointer = START;
+                }
+
                 @Override public boolean hasNext () {
                     rwLock.readLock().lock();
                     try {
-                        if(!wrapReadAllowed.get() && iter.pointer == lwl) return false;
+                        if(reachedEnd()) return false;
                         if(iter.hasNext(storage)) return true;
-                        if(!wrapReadAllowed.get()) return false;
-                        return new LIPosition(START).hasNext(storage);
+                        if(readHasAlreadyWrapped()) return false;
+                        return !dirtyRegionEndsAtStart() && new LIPosition(START).hasNext(storage);
                     } catch (StorageSystemException e) {
                         throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+"). Kinda indicates no such element");
                     } finally {
@@ -147,15 +228,14 @@ public class VarSizedRingBuffer {
                 @Override public byte[] next_or_null() {
                     rwLock.readLock().lock();
                     try {
-                        if (!wrapReadAllowed.get() && iter.pointer == lwl) return null;
+                        if (reachedEnd()) return null;
 
                         byte[] next = decoder.decode(iter);
                         if(next != null) return next;
 
-                        if(!wrapReadAllowed.get()) return null;
+                        if(readHasAlreadyWrapped()) return null;
 
-                        wrapReadAllowed.set(false);
-                        iter.pointer = START;
+                        wrap();
                         return next_or_null();
                     } catch (StorageSystemException e) {
                         throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+"). Kinda indicates no such element");
@@ -167,17 +247,14 @@ public class VarSizedRingBuffer {
                 @Override public void skip() {
                     rwLock.readLock().lock();
                     try {
-                        if (!wrapReadAllowed.get() && iter.pointer == lwl)
-                            throw new NoSuchElementException("No next element");
+                        if (reachedEnd()) throw new NoSuchElementException("No next element");
 
                         long decoded = decoder.skipEntry(iter);
                         if(decoded >= 0) return;
 
-                        if(!wrapReadAllowed.get())
-                            throw new NoSuchElementException("No next element");
+                        if(readHasAlreadyWrapped()) throw new NoSuchElementException("No next element");
 
-                        wrapReadAllowed.set(false);
-                        iter.pointer = START;
+                        wrap();
                         skip();
                     } catch (StorageSystemException e) {
                         throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+"). Kinda indicates no such element");
@@ -191,6 +268,13 @@ public class VarSizedRingBuffer {
         }
     }
 
+    /**
+     * TODO - requires reverse link li
+     * @return
+     */
+    public ExtendedIterator<byte[]> reverseIterator() {
+        throw new UnsupportedOperationException();
+    }
 
 
 
@@ -203,88 +287,82 @@ public class VarSizedRingBuffer {
         if(pointer+1>content_size)
             return null;
         byte[] cache = storage.sub(pointer, pointer+9); //cache maximum number of required bytes. (to minimize possibly slow sub calls)
-//        System.out.println("readLIBoundsAt("+pointer+") - cache = " + Arrays.toString(cache));
         return LIbae.get_next_li_bounds(cache, 0, pointer, content_size);
     }
-
-    protected void writeElem(long at, byte[] li, byte[] e) {
-        storage.set(at, li, e);
-    }
-
-
-
 
     //HEADER STUFF:
 
     public static final int START = 32;
 
     //last write location
-    protected long lwl = -1;
+    protected long drStart = -1;//dirty region start
     //current overwritten libae end
-    protected long cole = -1;
+    protected long drEnd = -1;//dirty region end
 
     protected void initHeader() {
         if (storage.contentSize() <= START) {
-            writePost(START, START);
+            commit(START, START);
         } else {
             byte[] headerBytes = storage.sub(0, START);
-            lwl = BitHelper.getInt64From(headerBytes, 0);
-            cole = BitHelper.getInt64From(headerBytes, 8);
-            long newerLwl = BitHelper.getInt64From(headerBytes, 16);
-            long newerCole = Math.min(cole, storage.contentSize());
-            long writeAt = BitHelper.getInt64From(headerBytes, 24);
-//            System.out.println("initHeader");
-//            System.out.println("lwl = " + lwl);
-//            System.out.println("cole = " + cole);
-//            System.out.println("newerLwl = " + newerLwl);
-//            System.out.println("newerCole = " + newerCole);
-//            System.out.println("writeAt = " + writeAt);
-            if(newerLwl != lwl) {
-                //ok, we now know it crashed between writePre and writePost - the only thing we don't know is whether we already wrote the element or not
-                long[] liBoundsAtOld = readLIBoundsAt(writeAt);
-//                System.out.println("liBoundsAtOld = " + Arrays.toString(liBoundsAtOld));
-                if(liBoundsAtOld==null) {
-                    //we have not written element yet, because li bounds at written position are invalid
-                    //why writeAt?!
-                    writePost(newerCole, writeAt);
-                } else if(liBoundsAtOld[1] != newerLwl) {
-                    //we know that at element has not been written, because the li bounds are incorrect and do not fit expected end
-                    writePost(newerCole, lwl);
-                } else if(writeAt == lwl) {
-                    //in this case, we know that we have not written element yet, but we need to invalidate the position
-                    //     because the positions is coincidentally valid.
-                    //   otherwise we would read former first element here (wrong order)
-                    //   do not have enough data to recover that first element - and its not worth it...
-                    writePost(newerCole, lwl);
-                } else {
-                    writePost(newerCole, newerLwl);
+            drStart = BitHelper.getInt64From(headerBytes, 0);
+            drEnd = BitHelper.getInt64From(headerBytes, 8);
+            long attemptedWriteStart = BitHelper.getInt64From(headerBytes, 16);
+            long attemptedWriteEnd = BitHelper.getInt64From(headerBytes, 24);
+            long newDrStart = Math.max(START, Math.min(storage.contentSize(), drStart));
+            long newDrEnd = Math.max(START, Math.min(storage.contentSize(), drEnd));
+
+            if(attemptedWriteStart != -1) {//if we crashed while writing the element
+                //what we want here: we want to invalidate what MAY have been written(e.g. [attemptedWriteStart, attemptedWriteEnd])
+                //the following ranges HAVE to be in the new dirty region:
+                //  [attemptedWriteStart, attemptedWriteEnd]
+                //  [drStart, drEnd]
+
+                if(newDrStart <= attemptedWriteStart && attemptedWriteEnd <= newDrEnd)
+                    return;//write range already marked as dirty
+
+                if(
+                    (newDrStart == newDrEnd && newDrEnd == storage.contentSize()) // if last write at end AND appended we need to truncate to dirty region start (everything after is invalid - we don't know whether it was written)
+                    ||
+                    (attemptedWriteStart == START && attemptedWriteEnd >= Math.max(newDrEnd, newDrStart))//if we wrapped and we wrote over the previous dirty region(attemptedWriteEnd >= newDrEnd), we have to invalidate all of that (if drStart>drEnd, dirty region is [START, drEnd])
+                ) {
+                    drStart = attemptedWriteStart;
+                    truncateToDirtyRegionStart();
+                    newDrStart = drStart;
+                    newDrEnd = drEnd;
                 }
-            } else if(cole != newerCole) {
-                writePost(newerCole, lwl);
+
+                //the truncate writes before are safe, because they are repeatable and yield the same result
+                //after the following commit we are safe anyways
+                commit(newDrStart, newDrEnd);
             }
         }
     }
 
 
-    protected void truncateToCOLE() {
-        if(cole < storage.contentSize())
-            storage.delete(cole, storage.contentSize());
+    protected void truncateToDirtyRegionStart() {
+        if(drStart < storage.contentSize()) {
+            storage.delete(drStart, storage.contentSize());
+            drEnd = Math.min(drStart, drEnd);
+        }
     }
-    protected void writePre(long newCole, long newLwl, long writeAt) {
+    protected void preCommit(long newDrEnd, long attemptedWriteStart, long attemptedWriteEnd) {
         //no need to write to instance variables - will write in post
         storage.set(
                 0,
-                BitHelper.getBytes(lwl), BitHelper.getBytes(newCole),
-                BitHelper.getBytes(newLwl), BitHelper.getBytes(writeAt)
+                BitHelper.getBytes(drStart), BitHelper.getBytes(newDrEnd),
+                BitHelper.getBytes(attemptedWriteStart), BitHelper.getBytes(attemptedWriteEnd)
         );
     }
-    protected void writePost(long newCole, long newLwl) {
-        cole = newCole;
-        lwl = newLwl;
+    protected void writeElem(long at, byte[] li, byte[] e) {
+        storage.set(at, li, e);
+    }
+    protected void commit(long newDrStart, long newDrEnd) {
+        drStart = newDrStart;
+        drEnd = newDrEnd;
         storage.set(
                 0,
-                BitHelper.getBytes(newLwl), BitHelper.getBytes(newCole),
-                BitHelper.getBytes(newLwl), BitHelper.getBytes((long) -1)
+                BitHelper.getBytes(newDrStart), BitHelper.getBytes(newDrEnd),
+                BitHelper.getBytes(-1L), BitHelper.getBytes(-1L)
         );
     }
 
@@ -293,7 +371,8 @@ public class VarSizedRingBuffer {
 
 
 
-    //ADDITIONAL, SECONDARY FUNCTIONALITY
+
+    //ADDITIONAL, SECONDARY FUNCTIONALITY - build from above
 
     /**
      * @return the earliest added element, that is still in this buffer
@@ -304,6 +383,7 @@ public class VarSizedRingBuffer {
 
     /**
      * Calculates size by iteration, should be considered costly
+     * (todo could cache num elements on commit in attemptedWriteStart position - on crash it could be loaded lazily)
      * @return the number of elements currently accessible by the iterator.
      */
     public int size() {
@@ -317,17 +397,48 @@ public class VarSizedRingBuffer {
     }
 
     /**
-     * Clears this buffer, might change the size of the underlying storage.
+     * @return whether this buffer is empty: ({@link #size()} == 0
      */
-    public void clear() {
-        rwLock.writeLock().lock();
-        try {
-            storage.setContent(ByteArrayStorage.getConcatenated(
-                BitHelper.getBytes(START), BitHelper.getBytes(START),
-                BitHelper.getBytes(START), BitHelper.getBytes(-1))
-            );
-        } finally {
-            rwLock.writeLock().unlock();
-        }
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+
+    public long calculateMaxSingleElementSize() {
+        long eUpperBound = max - START;
+        int updatedLiSize = LIbae.generateLI(eUpperBound).length;
+        int liSize;
+        do {
+            liSize = updatedLiSize;
+            updatedLiSize = LIbae.generateLI(eUpperBound - liSize).length;
+        } while (updatedLiSize != liSize);
+        return eUpperBound - liSize;
+    }
+
+
+    /**
+     * FIFO - enqueues at the end
+     * @param bytes to be enqueued
+     */
+    @Override public void enqueue(byte[] bytes) {
+        append(bytes);
+    }
+
+    /**
+     * FIFO - dequeues at earliest added
+     * @return the removed elements
+     */
+    @Override public byte[] dequeue() {
+        byte[] bytes = earliest();//this is efficient enough, the calculations are very different and io is bottleneck
+        deleteFirst();
+        return bytes;
+    }
+
+    /**
+     * FIFO - returns earliest added
+     * @return earliest
+     */
+    @Override public byte[] peek() {
+        return earliest();
     }
 }
