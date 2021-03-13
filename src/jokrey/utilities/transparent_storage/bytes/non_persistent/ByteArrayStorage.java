@@ -428,6 +428,7 @@ public class ByteArrayStorage implements TransparentBytesStorage {
         int counter = 0;
         for(byte[] part:parts) {
             System.arraycopy(part, 0, concatenated, counter, part.length);
+            counter += part.length;
         }
         return concatenated;
     }
