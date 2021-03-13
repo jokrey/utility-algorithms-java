@@ -15,7 +15,7 @@ import static jokrey.utilities.ring_buffer.validation.VSRBTests.afterWriteStateT
 import static jokrey.utilities.ring_buffer.validation.VSRBTests.check;
 import static org.junit.Assert.*;
 
-public class VSRBDeletionTests {
+public class VSRBForwardDeletionTests {
     @Test
     public void wrapTestWithDelete() {
         TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+10);

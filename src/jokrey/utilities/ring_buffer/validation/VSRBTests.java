@@ -177,14 +177,18 @@ public class VSRBTests {
         TransparentBytesStorage store = new ByteArrayStorage(max);
         VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
-        System.out.println("\n\n\nmax("+max+"), num("+num+")");
+        numTestWRAPPING(deterministicGenerator, num, max, store, vsrb);
+    }
+
+    public static void numTestWRAPPING(BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, int num, int max, TransparentBytesStorage store, VarSizedRingBufferQueueOnly vsrb) {
+        System.out.println("\n\n\nmax("+ max +"), num("+ num +")");
         try {
             for (int i = 0; i < num; i++) {
                 byte[] e = deterministicGenerator.apply(vsrb, i);
 //                System.out.println("generated("+i+") = " + new String(e));
                 boolean couldAdd = vsrb.append(e);
                 if(!couldAdd)
-                    throw new IllegalArgumentException("deterministicGenerator generated an element too large: (num("+num+"), max("+max+"), e.length("+e.length+"))");
+                    throw new IllegalArgumentException("deterministicGenerator generated an element too large: (num("+ num +"), max("+ max +"), e.length("+e.length+"))");
 
 //                System.out.println("added("+i+") = " + new String(e));
 //                VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);

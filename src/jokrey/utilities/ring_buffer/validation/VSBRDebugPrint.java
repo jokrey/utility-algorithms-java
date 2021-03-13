@@ -67,7 +67,7 @@ public class VSBRDebugPrint {
             if(liBounds==null)break;
             byte[] e = underlyingStorageOfVSBR.sub(liBounds[0], liBounds[1]);
             System.out.print((elemTransformer == null?"@bytes": elemTransformer.apply(e))+"["+(p - convSub)+", "+(liBounds[0] - convSub)+", "+(liBounds[1] - convSub)+"], ");
-            p = liBounds[1];
+            p = liBounds[1] + vsrb.calculatePostLIeOffset(liBounds);
         }
         System.out.println("}" );
     }

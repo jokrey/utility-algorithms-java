@@ -34,7 +34,7 @@ public class CrashableVSRB extends VarSizedRingBufferQueueOnly {
 
     //Returns whether the element was added
     public boolean append(byte[] e, CrashPoint crash) {
-        int lieSize = lieSize(e);
+        long lieSize = lieSize(e);
         long newDrEnd;
 
         long nextWriteStart = drStart;//start writing at dirty region

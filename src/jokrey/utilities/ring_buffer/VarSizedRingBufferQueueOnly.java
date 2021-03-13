@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * or
  * A ring buffer on storage
  * or
- * A forward linked list (like {@link LIbae}, with enforced bounds and auto deletion)
+ * A forward linked list (like {@link jokrey.utilities.encoder.as_union.li.bytes.LIbae}, with enforced bounds and auto deletion)
  *
  * Has atomicity guarantees for append, read and delete - as long as the underlying storage has them also for single ops
  *
@@ -79,7 +79,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
     public boolean append(byte[] e) {
         rwLock.writeLock().lock();
         try {
-            int lieSize = lieSize(e);
+            long lieSize = lieSize(e);
             long newDrEnd;
 
             long nextWriteStart = drStart;//start writing at dirty region
@@ -125,7 +125,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
                 if (liBounds == null) {//if we cannot read any the next li (for example eof, or writing for the first time)
                     return minResult;
                 } else {
-                    startAt = liBounds[1];
+                    startAt = liBounds[1] + calculatePostLIeOffset(liBounds);
                 }
             }
         }
@@ -149,7 +149,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
 
                 if (drEnd > drStart) { //only if nothing deleted yet, if drStart is at content size, we want to write more stuff before overwriting
                     truncateToDirtyRegionStart();//we just wrapped, we need to set content size to oldDrStart, because we don't want to read over it every
-                    //if we crash between here and writePost, then we do not delete and:
+                    //if we crash between here and commit, then we do not delete and:
                     //  -> after recover drStart==drEnd==contentSize()
                     //     on read: drEnd==contentSize() -> read from start
                     //     on write: drEnd=contentSize() -> drStart=contentSize() -> append at contentSize
@@ -159,7 +159,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
             }
 
             long[] liBounds = readForwardLIBoundsAt(newDrEnd);
-            newDrEnd = (liBounds == null ? storage.contentSize() : liBounds[1]);
+            newDrEnd = (liBounds == null ? storage.contentSize() : liBounds[1] + calculatePostLIeOffset(liBounds));
 
             if ((drEnd == newDrEnd || drEnd == oldContentSize) && drStart == newDrStart && (drStart < storage.contentSize()))
                 return false; //based on the above checks we know that we cannot delete anything, since everything has been deleted
@@ -207,7 +207,6 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
 
             long oldContentSize = storage.contentSize();//NOT THREAD SAFE ANYWAYS - this make it actually a little more safe (though insufficiently
 
-            LIbae decoder = new LIbae(storage);
             AtomicBoolean wrapReadAllowed = new AtomicBoolean(true);
             LIPosition iter = new LIPosition(drEnd);
             return new ExtendedIterator<byte[]>() {
@@ -245,8 +244,12 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
                     try {
                         if (reachedEnd()) return null;
 
-                        byte[] next = decoder.decode(iter);
-                        if(next != null) return next;
+                        long[] liBounds = readForwardLIBoundsAt(iter.pointer);
+                        if(liBounds != null) {
+                            byte[] next = storage.sub(liBounds[0], liBounds[1]);
+                            iter.pointer = liBounds[1] + calculatePostLIeOffset(liBounds);
+                            return next;
+                        }
 
                         if(readHasAlreadyWrapped()) return null;
 
@@ -264,8 +267,11 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
                     try {
                         if (reachedEnd()) throw new NoSuchElementException("No next element");
 
-                        long decoded = decoder.skipEntry(iter);
-                        if(decoded >= 0) return;
+                        long[] liBounds = readForwardLIBoundsAt(iter.pointer);
+                        if(liBounds != null) {
+                            iter.pointer = liBounds[1] + calculatePostLIeOffset(liBounds);
+                            return;
+                        }
 
                         if(readHasAlreadyWrapped()) throw new NoSuchElementException("No next element");
 
@@ -297,6 +303,19 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
         return LIbae.get_next_li_bounds(cache, 0, pointer, content_size);
     }
 
+    protected long calculatePreLIeOffset(long elementLength) {
+        return LIbae.calculateGeneratedLISize(elementLength);
+    }
+    protected final long calculatePreLIeOffset(long[] liBounds) {
+        return calculatePreLIeOffset(liBounds[1] - liBounds[0]);
+    }
+    protected long calculatePostLIeOffset(long elementLength) {
+        return 0;
+    }
+    public final long calculatePostLIeOffset(long[] liBounds) {
+        return calculatePostLIeOffset(liBounds[1] - liBounds[0]);
+    }
+
     //HEADER STUFF:
 
     public static final int START = 32;
@@ -311,21 +330,23 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
             commit(START, START);
         } else {
             byte[] headerBytes = storage.sub(0, START);
-            drStart = BitHelper.getInt64From(headerBytes, 0);
-            drEnd = BitHelper.getInt64From(headerBytes, 8);
+            drStart = Math.max(START, Math.min(storage.contentSize(), BitHelper.getInt64From(headerBytes, 0)));
+            drEnd = Math.max(START, Math.min(storage.contentSize(), BitHelper.getInt64From(headerBytes, 8)));//this does deleteFirst recovery, by ensuring drEnd <= contentSize
             long attemptedWriteStart = BitHelper.getInt64From(headerBytes, 16);
 
+            //==== RECOVERY ====
+            //only recovering from append! Deletions are inherently safely implemented (they only do repeatable truncate and commit)
             if(attemptedWriteStart != -1) {//if we crashed while writing the element
                 //what we want here: we want to invalidate what MAY have been written(e.g. [attemptedWriteStart, attemptedWriteEnd])
                 //the following ranges HAVE to be in the new dirty region:
                 //  [attemptedWriteStart, attemptedWriteEnd]
                 //  [drStart, drEnd]
                 long attemptedWriteEnd = BitHelper.getInt64From(headerBytes, 24);
-                long newDrStart = Math.max(START, Math.min(storage.contentSize(), drStart));
-                long newDrEnd = Math.max(START, Math.min(storage.contentSize(), drEnd));
+                long newDrStart = drStart;
+                long newDrEnd = drEnd;
 
                 if(newDrStart <= attemptedWriteStart && attemptedWriteEnd <= newDrEnd)
-                    return;//write range already marked as dirty
+                    return;//possibly written range already marked as dirty
 
                 if(
                     (newDrStart == newDrEnd && newDrEnd == storage.contentSize()) // if last write at end AND appended we need to truncate to dirty region start (everything after is invalid - we don't know whether it was written)
@@ -372,8 +393,8 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
                 BitHelper.getBytes(-1L), BitHelper.getBytes(-1L)
         );
     }
-    protected int lieSize(byte[] e) {
-        return e.length + LIbae.calculateGeneratedLISize(e.length);
+    protected long lieSize(byte[] e) {
+        return calculatePreLIeOffset(e.length) + e.length + calculatePostLIeOffset(e.length);
     }
 
 
@@ -451,8 +472,9 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
     @Override public byte[] dequeue() {
         rwLock.readLock().lock();
         try {
-            byte[] bytes = first();//this is efficient enough, the calculations are very different and io is bottleneck
-            deleteFirst();
+            byte[] bytes = first();//this is efficient enough, the calculations are very different and io is bottleneckif(bytes!=null)
+            if(bytes!=null)
+                deleteFirst();
             return bytes;
         } finally {
             rwLock.readLock().unlock();
