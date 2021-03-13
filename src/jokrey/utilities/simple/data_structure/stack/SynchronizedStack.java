@@ -12,8 +12,8 @@ public class SynchronizedStack<E> extends LinkedStack<E> {
         return super.pop();
     }
 
-    @Override public synchronized E peek() {
-        return super.peek();
+    @Override public synchronized E top() {
+        return super.top();
     }
 
     @Override public synchronized int size() {
@@ -29,7 +29,7 @@ public class SynchronizedStack<E> extends LinkedStack<E> {
         return super.pop(sleep_at_some_point);
     }
 
-    @Override public synchronized E peek(long sleep_at_some_point) {
-        return super.peek(sleep_at_some_point);
+    @Override public synchronized E top(long sleep_at_some_point) {
+        return super.top(sleep_at_some_point);
     }
 }

@@ -35,7 +35,7 @@ public class LFStack<E> implements EvaluableStack<E> {
         return oldHead.val;
     }
 
-    @Override public E peek() {
+    @Override public E top() {
         Node<E> headNode = head.get();
         return headNode==null? null: headNode.val;
     }
@@ -87,7 +87,7 @@ public class LFStack<E> implements EvaluableStack<E> {
         return oldHead.val;
     }
 
-    @Override public E peek(long sleep_at_some_point) {
+    @Override public E top(long sleep_at_some_point) {
         sleep(sleep_at_some_point/2);
         Node<E> headNode = head.get();
         sleep(sleep_at_some_point/2);

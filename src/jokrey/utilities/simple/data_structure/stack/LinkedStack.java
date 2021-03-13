@@ -24,7 +24,7 @@ public class LinkedStack<E> implements EvaluableStack<E> {
         }
     }
 
-    @Override public E peek() {
+    @Override public E top() {
         return head==null? null: head.val;
     }
 
@@ -65,9 +65,11 @@ public class LinkedStack<E> implements EvaluableStack<E> {
         }
     }
 
-    @Override public E peek(long sleep_at_some_point) {
-        sleep(sleep_at_some_point);
-        return head==null? null: head.val;
+    @Override public E top(long sleep_at_some_point) {
+        sleep(sleep_at_some_point/2);
+        boolean headNull = head == null;
+        sleep(sleep_at_some_point/2);
+        return headNull? null: head.val;
     }
 
     @Override public String toString() {

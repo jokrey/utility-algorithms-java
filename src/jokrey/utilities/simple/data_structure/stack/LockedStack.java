@@ -31,10 +31,10 @@ public class LockedStack<E> extends LinkedStack<E> {
         } finally {lock.unlock();}
     }
 
-    @Override public E peek() {
+    @Override public E top() {
         lock.lock();
         try {
-            return super.peek();
+            return super.top();
         } finally {lock.unlock();}
     }
 
@@ -54,10 +54,10 @@ public class LockedStack<E> extends LinkedStack<E> {
         } finally {lock.unlock();}
     }
 
-    @Override public E peek(long sleep_at_some_point) {
+    @Override public E top(long sleep_at_some_point) {
         lock.lock();
         try {
-            return super.peek(sleep_at_some_point);
+            return super.top(sleep_at_some_point);
         } finally {lock.unlock();}
     }
 }
