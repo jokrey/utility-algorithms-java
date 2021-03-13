@@ -273,7 +273,7 @@ public class ConcurrentStackTest {
 
         assertEquals(1002, stack.size());
     }
-    public void multipleWritersMultipleReaders_withSuspension(Stack<String> stack) throws Throwable {
+    public void multipleWritersMultipleReaders_withSuspension(EvaluableStack<String> stack) throws Throwable {
         int nThreads = 500;
         int suspendEveryNthThread = 100;
         int suspendFor = 250;

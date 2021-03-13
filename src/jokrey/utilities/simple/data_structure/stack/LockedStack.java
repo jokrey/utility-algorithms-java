@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author jokrey
  */
 public class LockedStack<E> extends LinkedStack<E> {
-    private Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
     @Override public void push(E e) {
         lock.lock();

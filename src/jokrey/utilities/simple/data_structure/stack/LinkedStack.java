@@ -7,7 +7,7 @@ import static jokrey.utilities.simple.data_structure.stack.ConcurrentStackTest.s
 /**
  * @author jokrey
  */
-public class LinkedStack<E> implements Stack<E> {
+public class LinkedStack<E> implements EvaluableStack<E> {
     private Node<E> head = null;
 
     @Override public void push(E e) {

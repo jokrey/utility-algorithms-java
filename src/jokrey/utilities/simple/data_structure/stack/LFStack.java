@@ -9,8 +9,8 @@ import static jokrey.utilities.simple.data_structure.stack.ConcurrentStackTest.s
 /**
  * @author jokrey
  */
-public class LFStack<E> implements Stack<E> {
-    private AtomicReference<Node<E>> head = new AtomicReference<>(null);
+public class LFStack<E> implements EvaluableStack<E> {
+    private final AtomicReference<Node<E>> head = new AtomicReference<>(null);
 
     @Override public void push(E e) {
         Node<E> oldHead;
