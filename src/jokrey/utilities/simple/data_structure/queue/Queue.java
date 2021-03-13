@@ -14,11 +14,4 @@ public interface Queue<E> {
     int size();
     /**Clears the contents*/
     void clear();
-
-
-    //debug or test functionality:
-    default void println() {throw new UnsupportedOperationException();}
-    default void enqueue(E e, long sleep_at_some_point) {throw new UnsupportedOperationException();}
-    default E dequeue(long sleep_at_some_point) {throw new UnsupportedOperationException();}
-    default E peek(long sleep_at_some_point) {throw new UnsupportedOperationException();}
 }

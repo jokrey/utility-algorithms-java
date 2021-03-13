@@ -272,7 +272,7 @@ public class ConcurrentQueueTest {
 
         assertEquals(1001, queue.size());
     }
-    public void run_suspendThreads_ManyWritersManyReaders(Queue<String> queue) throws Throwable {
+    public void run_suspendThreads_ManyWritersManyReaders(EvaluableQueue<String> queue) throws Throwable {
         int nThreads = 3000;
         int suspendEveryNthThread = 100;
         int suspendFor = 250;

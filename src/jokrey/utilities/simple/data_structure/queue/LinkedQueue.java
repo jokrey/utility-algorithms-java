@@ -7,7 +7,7 @@ import static jokrey.utilities.simple.data_structure.queue.ConcurrentQueueTest.s
 /**
  * @author jokrey
  */
-public class LinkedQueue<E> implements Queue<E> {
+public class LinkedQueue<E> implements EvaluableQueue<E> {
     private Node<E> first = null;
     private Node<E> last = null;
 
