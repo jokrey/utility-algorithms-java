@@ -188,6 +188,10 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
     }
 
 
+    public static int calculateGeneratedLISize(long length) {
+        return getLeadingLIFor(length)+1;
+    }
+
     public static byte getLeadingLIFor(long length) {
         return (byte) Math.max(0, Math.ceil(Math.floor((Math.log(length)/Math.log(2)) + 1) / 8));
     }

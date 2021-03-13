@@ -25,8 +25,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Assumptions:
  *  Max bytes are readily available. The buffer is not optimized towards setting the content below max, after using it.
  *  Occasionally it has to, but usually it does not
- *
- *  Todo further thread safety considerations (dequeue, earliest) - iterator will likely NOT be made thread safe
  */
 public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
     public final long max;
@@ -39,6 +37,9 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
      * @param storage must be editable,
      *                for atomicity of this buffer it must support atomicity of
      *                {@link TransparentBytesStorage#set(long, byte[]...)} and {@link TransparentBytesStorage#delete(long, long)} and {@link TransparentBytesStorage#setContent(Object)}
+     *                Further constrained:
+     *                  - set must only be atomic for at == 0 (because only header set must be atomic)
+     *                  - delete must only be atomic for to == contentSize (because only used for truncations)
      * @param max max index at which data will be written to underlying storage(appends will wrap and overwrite)
      * @throws IllegalArgumentException if max < {@link VarSizedRingBufferQueueOnly#START} or max < storage.contentSize()
      */
@@ -49,6 +50,23 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
         this.storage = storage;
 
         initHeader();
+    }
+
+    /**
+     * Can be used to secure an iteration
+     * Will upgrade to writeLock for the minimal time if a write operation occurs within this read.
+     * After the write operation, continuing iteration might not be possible (the internal pointers used may have become invalid)
+     *   Failed iteration is not necessarily detectable.
+     *   Therefore write operations should generally be the last thing to occur in this op.
+     * @param r operations or iterations to run
+     */
+    public void read(Runnable r) {
+        rwLock.readLock().lock();
+        try {
+            r.run();
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     /**
@@ -355,7 +373,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
         );
     }
     protected int lieSize(byte[] e) {
-        return LIbae.generateLI(e.length).length;
+        return e.length + LIbae.calculateGeneratedLISize(e.length);
     }
 
 
@@ -370,7 +388,12 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
      * @return the earliest added element, that is still in this buffer
      */
     public byte[] first() {
-        return iterator().next_or_null();
+        rwLock.readLock().lock();
+        try {
+            return iterator().next_or_null();
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     /**
@@ -379,13 +402,18 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
      * @return the number of elements currently accessible by the iterator.
      */
     public int size() {
-        int counter = 0;
-        ExtendedIterator<?> iterator = iterator();
-        while(iterator.hasNext()) {
-            iterator.skip();
-            counter++;
+        rwLock.readLock().lock();
+        try {
+            int counter = 0;
+            ExtendedIterator<?> iterator = iterator();
+            while(iterator.hasNext()) {
+                iterator.skip();
+                counter++;
+            }
+            return counter;
+        } finally {
+            rwLock.readLock().unlock();
         }
-        return counter;
     }
 
     /**
@@ -397,11 +425,11 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
 
     public long calculateMaxSingleElementSize() {
         long eUpperBound = max - START;
-        int updatedLiSize = LIbae.generateLI(eUpperBound).length;
+        int updatedLiSize = LIbae.calculateGeneratedLISize(eUpperBound);
         int liSize;
         do {
             liSize = updatedLiSize;
-            updatedLiSize = LIbae.generateLI(eUpperBound - liSize).length;
+            updatedLiSize = LIbae.calculateGeneratedLISize(eUpperBound - liSize);
         } while (updatedLiSize != liSize);
         return eUpperBound - liSize;
     }
@@ -409,6 +437,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
 
     /**
      * FIFO - enqueues at the end
+     * Same as {@link VarSizedRingBufferQueueOnly#append(byte[])}
      * @param bytes to be enqueued
      */
     @Override public void enqueue(byte[] bytes) {
@@ -420,9 +449,14 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
      * @return the removed elements
      */
     @Override public byte[] dequeue() {
-        byte[] bytes = first();//this is efficient enough, the calculations are very different and io is bottleneck
-        deleteFirst();
-        return bytes;
+        rwLock.readLock().lock();
+        try {
+            byte[] bytes = first();//this is efficient enough, the calculations are very different and io is bottleneck
+            deleteFirst();
+            return bytes;
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     /**

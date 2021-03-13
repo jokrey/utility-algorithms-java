@@ -450,7 +450,7 @@ public class CrashConsistencyValidation {
 //        int max = 204;
 //        int num = 89;
         String str = "abcdefghijklmnopqrstuvxyz0123456789";
-        for(int max = START + (str+"99").length()+ LIbae.generateLI((str+"99").length()).length; max<1000; max+=19) {
+        for(int max = START + (str+"99").length()+ LIbae.calculateGeneratedLISize((str+"99").length()); max<1000; max+=19) {
             for (int num = 0; num < 100; num++) {
                 numTestWRAPPINGWithRandomDeletions((vsrb, i) -> (i + str).getBytes(), num, max);
             }

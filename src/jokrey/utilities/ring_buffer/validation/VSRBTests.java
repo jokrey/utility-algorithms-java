@@ -152,7 +152,7 @@ public class VSRBTests {
     @Test
     public void fillItPrintItWrapIt() {
         String str = "abcdefghijklmnopqrstuvxyz0123456789";
-        for(int max = VarSizedRingBufferQueueOnly.START + (str+"99").length()+ LIbae.generateLI((str+"99").length()).length; max<1000; max+=19) {
+        for(int max = VarSizedRingBufferQueueOnly.START + (str+"99").length()+ LIbae.calculateGeneratedLISize((str+"99").length()); max<1000; max+=19) {
             for (int num = 0; num < 100; num++) {
                 numTestWRAPPING((vsrb, i) -> (i + str).getBytes(), num, max);
             }
