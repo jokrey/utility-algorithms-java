@@ -186,7 +186,7 @@ public class ConcurrentStackTest {
         assertEquals(iterations, stack.size());
 
         for(int i=0;i<iterations;i++) {
-            assertEquals(String.valueOf(iterations-1), stack.peek());
+            assertEquals(String.valueOf(iterations-1), stack.top());
         }
 
         assertEquals(iterations, stack.size());
@@ -214,7 +214,7 @@ public class ConcurrentStackTest {
 
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = stack.peek();
+                String val = stack.top();
                 assertNotNull(val); //cannot assert anything else, actual state is nondeterministic
             });
         }
@@ -248,7 +248,7 @@ public class ConcurrentStackTest {
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
                 for(int i2=0;i2<nThreads;i2++) {
-                    String val = stack.peek(); //cannot assert anything else, actual state is nondeterministic
+                    String val = stack.top(); //cannot assert anything else, actual state is nondeterministic
                     assertNotNull(val);
                 }
             });
@@ -265,7 +265,7 @@ public class ConcurrentStackTest {
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = stack.peek();
+                String val = stack.top();
                 assertEquals("top", val);
             });
         }
@@ -297,7 +297,7 @@ public class ConcurrentStackTest {
         for(int i=0;i<nThreads;i++) {
             int fi = i;
             pool.execute(() -> {
-                String val = (fi %suspendEveryNthThread == 0)? stack.peek(suspendFor) : stack.peek();
+                String val = (fi %suspendEveryNthThread == 0)? stack.top(suspendFor) : stack.top();
                 assertNotNull(val); //cannot assert anything else, actual state is nondeterministic
             });
         }
