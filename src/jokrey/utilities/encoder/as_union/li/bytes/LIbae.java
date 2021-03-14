@@ -288,7 +288,7 @@ public class LIbae extends LIe<byte[]> implements EncodableAsBytes {
         long lengthIndicator_asInt = getIntFromByteArray(partialData,  partialDataOffset-leading_li, leading_li);
         if(lengthIndicator_asInt==-1 || li_offset-lengthIndicator_asInt < minimum)
             return null;
-        li_offset-=leading_li + 1; //to skip the li information.
+        li_offset-= (leading_li + 1); //to skip the li information.
         return new long[]{li_offset - lengthIndicator_asInt, li_offset};
     }
 
