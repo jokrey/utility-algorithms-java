@@ -8,13 +8,19 @@ import java.util.function.Function;
 import static org.junit.Assert.fail;
 
 public class TestUtilities {
+    public static <E> List<E> collectToList(Iterator<E> iterator) {
+        List<E> list = new ArrayList<>();
+        while(iterator.hasNext())
+            list.add(iterator.next());
+        return list;
+    }
+
     public static void assertIteratorEquality(Iterator<?>... iterators) {
         if(iterators.length == 0) return;
         for(int counter=0;;counter++) {
             boolean hasNext = getOrFail(iterators.length, "at "+counter, i -> iterators[i].hasNext());
             if(!hasNext) break;
             Object next = getOrFail(iterators.length, "at "+counter, i -> iterators[i].next());
-            System.out.println("next("+counter+") = " + next);
         }
     }
 
