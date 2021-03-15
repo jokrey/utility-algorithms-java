@@ -24,7 +24,6 @@ Some of the algorithms here may be implementation of protocols that exist in oth
  * date_time - (yeah yeah never build a date api yourself) - a very simplistic date and time api for when dealing with timezones and complex stuff is overkill
  * timediffmarker(also: *rust*) and callcounter - fairly dumb debugging tool. Only slightly better than Sys.out's
  * asap_queue - fairly dumb 'defer call until possible' queue (uses exceptions for flow control, so use with a strong stomach only)
- * vsrb - variable sized element ring buffer - capacitated ring buffer with queue and stack operations on arbitrary storage(in RAM, on File, remotely)
 
 ## Usage
 
