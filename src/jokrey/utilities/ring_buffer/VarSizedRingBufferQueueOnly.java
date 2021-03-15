@@ -210,11 +210,11 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
                 boolean readHasAlreadyWrapped() {
                     return !wrapReadAllowed.get();
                 }
-                boolean dirtyRegionEndsAtStart() {
+                boolean dirtyRegionStartsAtEnd() {
                     return drStart == oldContentSize && drStart > drEnd;
                 }
                 boolean reachedEnd() {
-                    long virtualDirtyRegionStart = dirtyRegionEndsAtStart() ? VarSizedRingBufferQueueOnly.START : drStart;
+                    long virtualDirtyRegionStart = dirtyRegionStartsAtEnd() ? VarSizedRingBufferQueueOnly.START : drStart;
                     return readHasAlreadyWrapped() && iter.pointer == virtualDirtyRegionStart;
                 }
                 void wrap() {
@@ -228,7 +228,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
                         if(reachedEnd()) return false;
                         if(iter.hasNext(storage)) return true;
                         if(readHasAlreadyWrapped()) return false;
-                        return !dirtyRegionEndsAtStart() && new LIPosition(START).hasNext(storage);
+                        return !dirtyRegionStartsAtEnd() && new LIPosition(START).hasNext(storage);
                     } catch (StorageSystemException e) {
                         throw new NoSuchElementException("Internal Storage System Exception of sorts("+e.getMessage()+"). Kinda indicates no such element");
                     } finally {
@@ -443,13 +443,13 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
 
     public long calculateMaxSingleElementSize() {
         long eUpperBound = max - START;
-        int updatedLiSize = LIbae.calculateGeneratedLISize(eUpperBound);
-        int liSize;
+        long metadataSizeForElement = calculatePreLIeOffset(eUpperBound)+calculatePostLIeOffset(eUpperBound);
+        long previousMetadataSizeForElement;
         do {
-            liSize = updatedLiSize;
-            updatedLiSize = LIbae.calculateGeneratedLISize(eUpperBound - liSize);
-        } while (updatedLiSize != liSize);
-        return eUpperBound - liSize;
+            previousMetadataSizeForElement = metadataSizeForElement;
+            metadataSizeForElement = calculatePreLIeOffset(eUpperBound-metadataSizeForElement)+calculatePostLIeOffset(eUpperBound-metadataSizeForElement);
+        } while (metadataSizeForElement != previousMetadataSizeForElement);
+        return eUpperBound - metadataSizeForElement;
     }
 
 
@@ -471,7 +471,7 @@ public class VarSizedRingBufferQueueOnly implements Queue<byte[]> {
         try {
             byte[] bytes = first();//this is efficient enough, the calculations are very different and io is bottleneckif(bytes!=null)
             if(bytes!=null)
-                deleteFirst();
+                deleteFirst();//upgrades to write lock
             return bytes;
         } finally {
             rwLock.readLock().unlock();
