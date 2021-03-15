@@ -6,6 +6,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.function.Function;
+
 import static org.junit.Assert.*;
 
 /**
@@ -175,11 +177,14 @@ public class ConcurrentQueueTest {
     }
 
 
-    public void run_single_thread_test(Queue<String> queue) {
-        for(int redoForTime=0;redoForTime<100;redoForTime++) {
-            int iterations = 1000000;
+    public static void run_single_thread_test(Queue<String> queue) {
+        run_single_thread_test(100, 100000, queue, s->s, s->s);
+    }
+    public static <E>void run_single_thread_test(int redos, int iterations, Queue<E> queue, Function<String, E> conv, Function<E, String> convBack) {
+        queue.clear();
+        for(int redoForTime=0;redoForTime<redos;redoForTime++) {
             for (int i = 0; i < iterations; i++) {
-                queue.enqueue(String.valueOf(i));
+                queue.enqueue(conv.apply(String.valueOf(i)));
             }
 
             assertEquals(iterations, queue.size());
@@ -191,19 +196,23 @@ public class ConcurrentQueueTest {
             assertEquals(iterations, queue.size());
 
             for (int i = 0; i < iterations; i++) {
-                assertEquals(String.valueOf(i), queue.dequeue());
+                assertEquals(String.valueOf(i), convBack.apply(queue.dequeue()));
             }
 
             assertEquals(0, queue.size());
         }
     }
-    public void run_ManyWritersManyReaders(Queue<String> queue) throws Throwable {
+    public static void run_ManyWritersManyReaders(Queue<String> queue) throws Throwable {
+        run_ManyWritersManyReaders(queue, s->s, s->s);
+    }
+    public static <E>void run_ManyWritersManyReaders(Queue<E> queue, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        queue.clear();
         int nThreads = 10000;
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             int fi = i;
             pool.execute(() -> {
-                queue.enqueue(fi + "");
+                queue.enqueue(conv.apply(fi + ""));
             });
         }
         pool.waitForShutdownOrException();
@@ -214,7 +223,7 @@ public class ConcurrentQueueTest {
 
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = queue.peek();
+                String val = convBack.apply(queue.peek());
                 assertNotNull(val); //cannot really assert anything else..
             });
         }
@@ -225,7 +234,7 @@ public class ConcurrentQueueTest {
         pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = queue.dequeue();
+                String val = convBack.apply(queue.dequeue());
                 assertNotNull(val); //cannot really assert anything else..
             });
         }
@@ -233,20 +242,24 @@ public class ConcurrentQueueTest {
 
         assertEquals(0, queue.size());
     }
-    public void run_SingleWriterManyReaders(Queue<String> queue) throws Throwable {
-        int nThreads = 10000;
+    public static void run_SingleWriterManyReaders(Queue<String> queue) throws Throwable {
+        run_SingleWriterManyReaders(queue, s->s, s->s);
+    }
+    public static <E>void run_SingleWriterManyReaders(Queue<E> queue, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        queue.clear();
+        int nThreads = 100;
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
 //        queue.enqueue("initial");
         pool.execute(() -> {
             for(int i=0;i<nThreads;i++) {
-                if (i % 2 == 0) queue.enqueue(i + "");
+                if (i % 2 == 0) queue.enqueue(conv.apply(i + ""));
                 else            queue.dequeue();
             }
         });
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
                 for(int i2=0;i2<nThreads;i2++) {
-                    String val = queue.peek();
+                    queue.peek();
                 }
 //                assertNotNull(val); //cannot really assert anything else..
             });
@@ -255,16 +268,20 @@ public class ConcurrentQueueTest {
 
         assertEquals(0, queue.size());
     }
-    public void run_WriteOnceBeforeManyReaders(Queue<String> queue) throws Throwable {
+    public static void run_WriteOnceBeforeManyReaders(Queue<String> queue) throws Throwable {
+        run_WriteOnceBeforeManyReaders(queue, s->s, s->s);
+    }
+    public static <E>void run_WriteOnceBeforeManyReaders(Queue<E> queue, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        queue.clear();
         int nThreads = 10000;
-        queue.enqueue("initial");
+        queue.enqueue(conv.apply("initial"));
         for(int i=0;i<1000;i++) {
-            queue.enqueue(i + "");
+            queue.enqueue(conv.apply(i + ""));
         }
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = queue.peek();
+                String val = convBack.apply(queue.peek());
                 assertEquals("initial", val);
             });
         }

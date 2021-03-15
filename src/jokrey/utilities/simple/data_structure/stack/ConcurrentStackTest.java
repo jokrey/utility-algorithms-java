@@ -179,33 +179,40 @@ public class ConcurrentStackTest {
     }
 
 
-    public void singleThreadTest(Stack<String> stack) {
-        int iterations = 1000000;
+    public static void singleThreadTest(Stack<String> stack) {
+        singleThreadTest(100000, stack, s->s, s->s);
+    }
+    public static <E>void singleThreadTest(int iterations, Stack<E> stack, Function<String, E> conv, Function<E, String> convBack) {
+        stack.clear();
         for(int i=0;i<iterations;i++) {
-            stack.push(String.valueOf(i));
+            stack.push(conv.apply(String.valueOf(i)));
         }
 
         assertEquals(iterations, stack.size());
 
         for(int i=0;i<iterations;i++) {
-            assertEquals(String.valueOf(iterations-1), stack.top());
+            assertEquals(String.valueOf(iterations-1), convBack.apply(stack.top()));
         }
 
         assertEquals(iterations, stack.size());
 
         for(int i=iterations-1;i>=0;i--) {
-            assertEquals(String.valueOf(i), stack.pop());
+            assertEquals(String.valueOf(i), convBack.apply(stack.pop()));
         }
 
         assertEquals(0, stack.size());
     }
-    public void multipleWritersMultipleReaders(Stack<String> stack) throws Throwable {
+    public static <E> void multipleWritersMultipleReaders(Stack<String> stack) throws Throwable {
+        multipleWritersMultipleReaders(stack, s->s, s->s);
+    }
+    public static <E> void multipleWritersMultipleReaders(Stack<E> stack, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        stack.clear();
         int nThreads = 1000;
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             int fi = i;
             pool.execute(() -> {
-                stack.push(fi + "");
+                stack.push(conv.apply(fi + ""));
             });
         }
         pool.waitForShutdownOrException();
@@ -216,7 +223,7 @@ public class ConcurrentStackTest {
 
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = stack.top();
+                String val = convBack.apply(stack.top());
                 assertNotNull(val); //cannot assert anything else, actual state is nondeterministic
             });
         }
@@ -227,7 +234,7 @@ public class ConcurrentStackTest {
         pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = stack.pop();
+                String val = convBack.apply(stack.pop());
                 assertNotNull(val); //cannot assert anything else, actual state is nondeterministic
             });
         }
@@ -239,6 +246,7 @@ public class ConcurrentStackTest {
         singleWriterMultipleReaders(stack, s -> s, s -> s);
     }
     public static <E>void singleWriterMultipleReaders(Stack<E> stack, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        stack.clear();
         stack.push(conv.apply("former tos"));
         stack.push(conv.apply("tos"));
 
@@ -261,16 +269,20 @@ public class ConcurrentStackTest {
         pool.waitForShutdownOrException();
     }
     public static void run_WriteOnceBeforeManyReaders(Stack<String> stack) throws Throwable {
+        run_WriteOnceBeforeManyReaders(stack, s -> s, s -> s);
+    }
+    public static <E>void run_WriteOnceBeforeManyReaders(Stack<E> stack, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        stack.clear();
         int nThreads = 500;
-        stack.push("initial");
+        stack.push(conv.apply("initial"));
         for(int i=0;i<1000;i++) {
-            stack.push(i + "");
+            stack.push(conv.apply(i + ""));
         }
-        stack.push("top");
+        stack.push(conv.apply("top"));
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
-                String val = stack.top();
+                String val = convBack.apply(stack.top());
                 assertEquals("top", val);
             });
         }
