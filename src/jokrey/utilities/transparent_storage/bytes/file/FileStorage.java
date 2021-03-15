@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 /**
  * Implementation of {@link TransparentBytesStorage} writing the bytes into a file.
- * Should be as efficient as it get's using a RandomAccessFile.
+ * Should be as efficient as it gets using a RandomAccessFile.
  * Deletion requires a lot of copying, so whenever possible only call once.
  *
  * Querying all content (via {@link #getContent()}) might result in arrays too large for ram.
@@ -16,13 +16,12 @@ import java.util.Arrays;
  *
  * Thread safe and reentrant for all methods.
  *
- * Todo - evaluate performance of 'setLength', potentially there is an optimization where that data is kept in a header
- *  The length of the RAF is then
+ * ToDo: store size in a header - potential performance benefit - if never writing over a capacity
  *
  * @author jokrey
  */
 public class FileStorage implements TransparentBytesStorage {
-    private final RandomAccessFile raf;
+    protected final RandomAccessFile raf;
     private final int io_buffer_size;
 
     /**
@@ -42,7 +41,6 @@ public class FileStorage implements TransparentBytesStorage {
      */
     public FileStorage(File file, int io_buffer_size, String mode) throws FileNotFoundException {
         raf= new RandomAccessFile(file, mode);
-//        raf= new RandomAccessFile(file, "rwd"); //should maybe be used, but might make it less performant
         this.io_buffer_size=io_buffer_size;
     }
 
