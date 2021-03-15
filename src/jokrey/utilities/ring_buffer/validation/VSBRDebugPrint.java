@@ -1,6 +1,7 @@
 package jokrey.utilities.ring_buffer.validation;
 
 import jokrey.utilities.bitsandbytes.BitHelper;
+import jokrey.utilities.ring_buffer.VarSizedRingBuffer;
 import jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly;
 import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 
@@ -45,6 +46,9 @@ public class VSBRDebugPrint {
     public static List<String> elementsToList(VarSizedRingBufferQueueOnly vsrb, Function<byte[], String> elemTransformer) {
         return vsrb.iterator().collect().stream().map(elemTransformer).collect(Collectors.toList());
     }
+    public static List<String> reverseElementsToList(VarSizedRingBuffer vsrb, Function<byte[], String> elemTransformer) {
+        return vsrb.reverseIterator().collect().stream().map(elemTransformer).collect(Collectors.toList());
+    }
 
     public static void printMemoryLayout(VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer) {
         printMemoryLayout(vsrb, underlyingStorageOfVSBR, elemTransformer, true);
@@ -56,20 +60,41 @@ public class VSBRDebugPrint {
         printMemoryLayout(vsrb, underlyingStorageOfVSBR, elemTransformer, drS, drE, convertToStart);
     }
     private static void printMemoryLayout(VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage underlyingStorageOfVSBR, Function<byte[], String> elemTransformer, long drS, long drE, boolean convertToStart) {
-        int convSub = convertToStart?START:0;
-        System.out.print("memoryLayout("+(underlyingStorageOfVSBR.contentSize() - convSub)+"/"+(vsrb.max- convSub)+"): "+(drS - convSub)+","+(drE - convSub)+"{");
+        int convSub = convertToStart? START:0;
         long p = START;
-        long virtualLwl = drS == underlyingStorageOfVSBR.contentSize() && drS>drE ? START : drS;
+        if(drE < drS)
+            p = drE;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("memoryLayout(")
+               .append(underlyingStorageOfVSBR.contentSize() - convSub).append("/").append(vsrb.max - convSub)
+               .append("): ")
+               .append(drS - convSub).append(",").append(drE - convSub)
+               .append("{");
+        boolean wasAnythingAdded = false;
         while(p < underlyingStorageOfVSBR.contentSize()) {
-            if(p == virtualLwl) p = drE;//skip dirty region
+            if(p == drS) {
+                p = drE;//skip dirty region
+                if(drE < drS) break;
+            }
 
             long[] liBounds = vsrb.readForwardLIBoundsAt(p);
             if(liBounds==null)break;
             byte[] e = underlyingStorageOfVSBR.sub(liBounds[0], liBounds[1]);
             long oldP = p;
             p = liBounds[1] + vsrb.calculatePostLIeOffset(liBounds);
-            System.out.print((elemTransformer == null?"@bytes": elemTransformer.apply(e))+"["+(oldP - convSub)+", "+(liBounds[0] - convSub)+", "+(liBounds[1] - convSub)+", "+(p - convSub)+"], ");
+            builder.append(elemTransformer == null ? "@bytes" : elemTransformer.apply(e))
+                   .append("[")
+                   .append(oldP - convSub).append(", ")
+                   .append(liBounds[0] - convSub).append(", ")
+                   .append(liBounds[1] - convSub).append(", ")
+                   .append(p - convSub)
+                   .append("]")
+                   .append(", ");
+            wasAnythingAdded = true;
         }
-        System.out.println("}" );
+        if(wasAnythingAdded) builder.delete(builder.length()-2, builder.length());
+        builder.append("}");
+        System.out.println(builder);
     }
 }
