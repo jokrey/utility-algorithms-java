@@ -6,6 +6,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.function.Function;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -233,29 +235,32 @@ public class ConcurrentStackTest {
 
         assertEquals(0, stack.size());
     }
-    public void singleWriterMultipleReaders(Stack<String> stack) throws Throwable {
-        stack.push("former tos");
-        stack.push("tos");
+    public static void singleWriterMultipleReaders(Stack<String> stack) throws Throwable {
+        singleWriterMultipleReaders(stack, s -> s, s -> s);
+    }
+    public static <E>void singleWriterMultipleReaders(Stack<E> stack, Function<String, E> conv, Function<E, String> convBack) throws Throwable {
+        stack.push(conv.apply("former tos"));
+        stack.push(conv.apply("tos"));
 
         int nThreads = 1000;
         ConcurrentPoolTester pool = new ConcurrentPoolTester(nThreads);
         pool.execute(() -> {
             for(int i=0;i<nThreads*nThreads;i++) {
                 if (i%2==0)         stack.pop();
-                else                stack.push(i + "");
+                else                stack.push(conv.apply(i + ""));
             }
         });
         for(int i=0;i<nThreads;i++) {
             pool.execute(() -> {
                 for(int i2=0;i2<nThreads;i2++) {
-                    String val = stack.top(); //cannot assert anything else, actual state is nondeterministic
+                    String val = convBack.apply(stack.top()); //cannot assert anything else, actual state is nondeterministic
                     assertNotNull(val);
                 }
             });
         }
         pool.waitForShutdownOrException();
     }
-    public void run_WriteOnceBeforeManyReaders(Stack<String> stack) throws Throwable {
+    public static void run_WriteOnceBeforeManyReaders(Stack<String> stack) throws Throwable {
         int nThreads = 500;
         stack.push("initial");
         for(int i=0;i<1000;i++) {
@@ -328,5 +333,44 @@ public class ConcurrentStackTest {
     }
     public static int rand(int min, int max) {
         return (int)(Math.random() * ( (max - min) + 1)) + min;
+    }
+
+
+    public static <E> void simpleStackTest(Stack<E> stack, Function<String, E> conv, Function<E, String> convBack) {
+        stack.clear();
+        assertTrue(stack.isEmpty());
+        assertEquals(0, stack.size());
+
+        stack.push(conv.apply("1"));
+        stack.push(conv.apply("2"));
+        stack.push(conv.apply("3"));
+        stack.push(conv.apply("4"));
+        stack.push(conv.apply("5"));
+        stack.push(conv.apply("6"));
+        assertEquals(6, stack.size());
+        assertEquals("6", convBack.apply(stack.top()));
+
+        assertEquals("6", convBack.apply(stack.pop()));
+        assertEquals("5", convBack.apply(stack.pop()));
+        assertEquals("4", convBack.apply(stack.pop()));
+        assertEquals("3", convBack.apply(stack.pop()));
+        assertEquals("2", convBack.apply(stack.pop()));
+
+        assertEquals("1", convBack.apply(stack.top()));
+        stack.push(conv.apply("22"));
+        assertEquals("22", convBack.apply(stack.top()));
+        assertEquals("22", convBack.apply(stack.pop()));
+        assertEquals("1", convBack.apply(stack.pop()));
+
+        assertTrue(stack.isEmpty());
+        assertEquals(0, stack.size());
+        stack.push(conv.apply("111"));
+        stack.push(conv.apply("222"));
+        stack.push(conv.apply("333"));
+        assertEquals(3, stack.size());
+
+        stack.clear();
+        assertTrue(stack.isEmpty());
+        assertEquals(0, stack.size());
     }
 }
