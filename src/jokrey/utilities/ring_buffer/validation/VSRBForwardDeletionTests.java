@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
-import static jokrey.utilities.ring_buffer.validation.VSRBTests.afterWriteStateTest;
-import static jokrey.utilities.ring_buffer.validation.VSRBTests.check;
+import static jokrey.utilities.ring_buffer.validation.VSRBTests.*;
 import static org.junit.Assert.*;
 
 public class VSRBForwardDeletionTests {
@@ -21,24 +21,23 @@ public class VSRBForwardDeletionTests {
         TransparentBytesStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+10);
         VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+10);
 
-        afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
+        afterWriteStateTest(store, vsrb, "1", Collections.singletonList("1"));
         System.out.print("after write state test: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new, false);
         assertTrue(vsrb.deleteFirst());
         System.out.print("after delete: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new, false);
         assertTrue(vsrb.isEmpty());
         System.out.print("after is empty: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new, false);
         assertFalse(vsrb.deleteFirst());
-        afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
+        afterWriteStateTest(store, vsrb, "1", Collections.singletonList("1"));
         afterWriteStateTest(store, vsrb, "2", Arrays.asList("1", "2"));
         assertTrue(vsrb.deleteFirst());
         VSBRDebugPrint.printContents("after delete i=2", vsrb, store, String::new);
-        check(vsrb, Arrays.asList("2"));
+        check(vsrb, Collections.singletonList("2"));
         System.out.println("NOW CRITICAL DELETE");
         assertTrue(vsrb.deleteFirst());
         VSBRDebugPrint.printContents("after delete i=3", vsrb, store, String::new);
         assertTrue(vsrb.isEmpty());
-//        assertFalse(vsrb.deleteFirst());
-        afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
+        afterWriteStateTest(store, vsrb, "1", Collections.singletonList("1"));
         afterWriteStateTest(store, vsrb, "2", Arrays.asList("1", "2"));
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("1", "2", "3"));
         assertTrue(vsrb.deleteFirst());
@@ -58,7 +57,7 @@ public class VSRBForwardDeletionTests {
         check(vsrb, Arrays.asList("6", "7"));
         VSBRDebugPrint.printContents("after delete i=5", vsrb, store, String::new);
         assertTrue(vsrb.deleteFirst());
-        check(vsrb, Arrays.asList("7"));
+        check(vsrb, Collections.singletonList("7"));
         VSBRDebugPrint.printContents("after delete i=6", vsrb, store, String::new);
         assertTrue(vsrb.deleteFirst());
         VSBRDebugPrint.printContents("after delete i=7", vsrb, store, String::new);
@@ -98,7 +97,7 @@ public class VSRBForwardDeletionTests {
         ByteArrayStorage store = new ByteArrayStorage(VarSizedRingBufferQueueOnly.START+11);
         VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, VarSizedRingBufferQueueOnly.START+11);
 
-        afterWriteStateTest(store, vsrb, "4444", Arrays.asList("4444"));
+        afterWriteStateTest(store, vsrb, "4444", Collections.singletonList("4444"));
         afterWriteStateTest(store, vsrb, "333", Arrays.asList("4444", "333"));
 
         vsrb.clear();
@@ -115,7 +114,7 @@ public class VSRBForwardDeletionTests {
 
         VSBRDebugPrint.printContents("initial", vsrb, store, String::new);
 
-        afterWriteStateTest(store, vsrb, "1", Arrays.asList("1"));
+        afterWriteStateTest(store, vsrb, "1", Collections.singletonList("1"));
         afterWriteStateTest(store, vsrb, "2", Arrays.asList("1", "2"));
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("1", "2", "3"));
 
@@ -127,7 +126,7 @@ public class VSRBForwardDeletionTests {
         assertTrue(vsrb.deleteFirst());
 
         VSBRDebugPrint.printContents("after delete i=2", vsrb, store, String::new);
-        check(vsrb, Arrays.asList("3"));
+        check(vsrb, Collections.singletonList("3"));
     }
 
     @Test
@@ -142,7 +141,7 @@ public class VSRBForwardDeletionTests {
 
         vsrb.deleteFirst();
         VSBRDebugPrint.printContents("after delete i=1", vsrb, store, String::new);
-        check(vsrb, Arrays.asList("2"));
+        check(vsrb, Collections.singletonList("2"));
 
         vsrb.append("3".getBytes());
         VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
@@ -150,7 +149,7 @@ public class VSRBForwardDeletionTests {
 
         vsrb.deleteFirst();
         VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
-        check(vsrb, Arrays.asList("3"));
+        check(vsrb, Collections.singletonList("3"));
 
         vsrb.append("4".getBytes());
         VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
@@ -169,7 +168,7 @@ public class VSRBForwardDeletionTests {
 
         assertTrue(vsrb.deleteFirst());
         VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
-        check(vsrb, Arrays.asList("2"));
+        check(vsrb, Collections.singletonList("2"));
 
         vsrb.append("3".getBytes());
         VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
@@ -194,27 +193,19 @@ public class VSRBForwardDeletionTests {
         TransparentBytesStorage store = new ByteArrayStorage(max);
         VarSizedRingBufferQueueOnly vsrb = new VarSizedRingBufferQueueOnly(store, max);
 
+        numTestWRAPPINGWithRandomDeletions(deterministicGenerator, num, store, vsrb);
+    }
+
+    public static void numTestWRAPPINGWithRandomDeletions(BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, int num, TransparentBytesStorage store, VarSizedRingBufferQueueOnly vsrb) {
         Random r = new Random(235663456);
 
-        try {
-            for (int i = 0; i < num; i++) {
-                byte[] e = deterministicGenerator.apply(vsrb, i);
-                vsrb.append(e);
-//                VSBRDebugPrint.printContents(vsrb, store, String::new);
-                if(r.nextInt() == 22)
-                    vsrb.deleteFirst();
+        for (int i = 0; i < num; i++) {
+            byte[] e = deterministicGenerator.apply(vsrb, i);
+            vsrb.append(e);
+            if(r.nextInt() == 22)
+                vsrb.deleteFirst();
 
-                List<byte[]> iterator = vsrb.iterator().collect();
-                for (int ii = 0; ii < iterator.size(); ii++) {
-                    byte[] gen = deterministicGenerator.apply(vsrb, i - ii);
-                    byte[] got = iterator.get(iterator.size() - (ii + 1));
-                    assertArrayEquals(gen, got);
-                }
-//                System.out.println("e.length = " + e.length);
-            }
-            System.out.println("vsrb.iterator().collect().size() = " + vsrb.iterator().collect().size());
-        } finally {
-//            VSBRDebugPrint.printContents(vsrb, store, String::new);
+            validateElementsEqualToGenerator(vsrb.iterator().collect(), deterministicGenerator, vsrb, store, i);
         }
     }
 }

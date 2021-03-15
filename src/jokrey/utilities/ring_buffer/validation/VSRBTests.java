@@ -169,7 +169,7 @@ public class VSRBTests {
 
     public static byte[] utf8RandGen(VarSizedRingBufferQueueOnly vsrb, int deterministicator) {
         Random r = new Random(Integer.hashCode(deterministicator));
-        int size = r.nextInt((int) vsrb.calculateMaxSingleElementSize());
+        int size = r.nextInt((int) vsrb.calculateMaxSingleElementSize()/10);
         return GenericPerformanceTest.generate_utf8_conform_byte_array(size);
     }
 
@@ -181,40 +181,33 @@ public class VSRBTests {
     }
 
     public static void numTestWRAPPING(BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, int num, int max, TransparentBytesStorage store, VarSizedRingBufferQueueOnly vsrb) {
-        System.out.println("\n\n\nmax("+ max +"), num("+ num +")");
-        try {
-            for (int i = 0; i < num; i++) {
-                byte[] e = deterministicGenerator.apply(vsrb, i);
-//                System.out.println("generated("+i+") = " + new String(e));
-                boolean couldAdd = vsrb.append(e);
-                if(!couldAdd)
-                    throw new IllegalArgumentException("deterministicGenerator generated an element too large: (num("+ num +"), max("+ max +"), e.length("+e.length+"))");
+        for (int i = 0; i < num; i++) {
+            byte[] e = deterministicGenerator.apply(vsrb, i);
+            boolean couldAdd = vsrb.append(e);
+            if(!couldAdd)
+                throw new IllegalArgumentException("deterministicGenerator generated an element too large: (num("+ num +"), max("+ max +"), e.length("+e.length+"))");
 
-//                System.out.println("added("+i+") = " + new String(e));
-//                VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
-                assertFalse(vsrb.isEmpty());
+            assertFalse(vsrb.isEmpty());
 
-                List<byte[]> iterator = vsrb.iterator().collect();
-//                System.out.println("iterator = " + iterator.stream().map(String::new).collect(Collectors.toList()));
-                for (int ii = 0; ii < iterator.size(); ii++) {
-                    byte[] gen = deterministicGenerator.apply(vsrb, i - ii);
-                    byte[] got = iterator.get(iterator.size() - (ii + 1));
-                    try {
-                        assertArrayEquals(gen, got);
-                    } catch (Throwable t) {
-                        System.out.println("i = " + i);
-                        System.out.println("ii = " + ii);
-                        System.out.println("iterator = " + iterator.stream().map(String::new).collect(Collectors.toList()));
-                        System.out.println("gen("+(i - ii)+") = " + new String(gen));
-                        System.out.println("got("+(iterator.size() - (ii + 1))+") = " + new String(got));
-                        VSBRDebugPrint.printContents("After array equality fail ", vsrb, store, String::new);
-                        throw t;
-                    }
-                }
+            validateElementsEqualToGenerator(vsrb.iterator().collect(), deterministicGenerator, vsrb, store, i);
+        }
+    }
+
+    static void validateElementsEqualToGenerator(List<byte[]> dataInVsrb, BiFunction<VarSizedRingBufferQueueOnly, Integer, byte[]> deterministicGenerator, VarSizedRingBufferQueueOnly vsrb, TransparentBytesStorage store, int lastI) {
+        for (int ii = 0; ii < dataInVsrb.size(); ii++) {
+            byte[] gen = deterministicGenerator.apply(vsrb, lastI - ii);
+            byte[] got = dataInVsrb.get(dataInVsrb.size() - (ii + 1));
+            try {
+                assertArrayEquals(gen, got);
+            } catch (Throwable t) {
+                System.out.println("i = " + lastI);
+                System.out.println("ii = " + ii);
+                System.out.println("iterator = " + dataInVsrb.stream().map(String::new).collect(Collectors.toList()));
+                System.out.println("gen("+(lastI - ii)+") = " + new String(gen));
+                System.out.println("got("+(dataInVsrb.size() - (ii + 1))+") = " + new String(got));
+                VSBRDebugPrint.printContents("After array equality fail ", vsrb, store, String::new);
+                throw t;
             }
-        } finally {
-//            VSBRDebugPrint.printContents(vsrb, store, String::new);
-            System.out.println("vsrb.size() = " + vsrb.size());
         }
     }
 }

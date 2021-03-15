@@ -15,11 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import static jokrey.utilities.ring_buffer.VarSizedRingBufferQueueOnly.START;
-import static jokrey.utilities.ring_buffer.validation.VSRBTests.afterWriteStateTest;
-import static jokrey.utilities.ring_buffer.validation.VSRBTests.check;
+import static jokrey.utilities.ring_buffer.validation.VSRBTests.*;
 import static org.junit.Assert.*;
 
 /**
@@ -34,7 +32,7 @@ public class CrashConsistencyValidation {
 
         CrashableVSRB vsrb = new CrashableVSRB(store, START+8);
 
-        afterWriteStateTest(store, vsrb, "11", Arrays.asList("11")); //lieSize=4
+        afterWriteStateTest(store, vsrb, "11", Collections.singletonList("11")); //lieSize=4
         afterWriteStateTest(store, vsrb, "22", Arrays.asList("11", "22")); //lieSize=4
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("22", "3")); //lieSize=3 (but has space 4, so drStart!=drEnd)
 
@@ -44,7 +42,7 @@ public class CrashConsistencyValidation {
         VSBRDebugPrint.printContents("BEFORE RECOVERY: ", vsrb, store, String::new);
         vsrb = new CrashableVSRB(store, START+8);
         VSBRDebugPrint.printContents("AFTER RECOVERY: ", vsrb, store, String::new);
-        check(vsrb, Arrays.asList("3"));
+        check(vsrb, Collections.singletonList("3"));
         assertTrue(crashed);
 
         //NOTE - we lost some data in the crash. But the latest added element remains. So order is consistent.
@@ -53,7 +51,7 @@ public class CrashConsistencyValidation {
         //    we would assume that at oldDrStart(which has not been overwritten), we find a valid li item - which we would no longer
 
 
-        afterWriteStateTest(store, vsrb, "44444", Arrays.asList("44444"));
+        afterWriteStateTest(store, vsrb, "44444", Collections.singletonList("44444"));
     }
 
 
@@ -63,7 +61,7 @@ public class CrashConsistencyValidation {
 
         CrashableVSRB vsrb = new CrashableVSRB(store, START+8);
 
-        afterWriteStateTest(store, vsrb, "11", Arrays.asList("11")); //lieSize=4
+        afterWriteStateTest(store, vsrb, "11", Collections.singletonList("11")); //lieSize=4
         afterWriteStateTest(store, vsrb, "22", Arrays.asList("11", "22")); //lieSize=4
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("22", "3")); //lieSize=3 (but has space 4, so drStart!=drEnd)
 
@@ -76,7 +74,7 @@ public class CrashConsistencyValidation {
         check(vsrb, Collections.emptyList());
         assertTrue(crashed);
 
-        afterWriteStateTest(store, vsrb, "44444", Arrays.asList("44444"));
+        afterWriteStateTest(store, vsrb, "44444", Collections.singletonList("44444"));
 
         // We lost data in this crash. "22" is no longer there..
         // But state is consistent. We can read "3", and try to add "44444" again.
@@ -93,7 +91,7 @@ public class CrashConsistencyValidation {
 
         CrashableVSRB vsrb = new CrashableVSRB(store, START+8);
 
-        afterWriteStateTest(store, vsrb, "11", Arrays.asList("11")); //lieSize=4
+        afterWriteStateTest(store, vsrb, "11", Collections.singletonList("11")); //lieSize=4
         afterWriteStateTest(store, vsrb, "22", Arrays.asList("11", "22")); //lieSize=4
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("22", "3")); //lieSize=3 (but has space 4, so drStart!=drEnd)
 
@@ -106,7 +104,7 @@ public class CrashConsistencyValidation {
         check(vsrb, Collections.emptyList());
         assertTrue(crashed);
 
-        afterWriteStateTest(store, vsrb, "5", Arrays.asList("5"));
+        afterWriteStateTest(store, vsrb, "5", Collections.singletonList("5"));
     }
 
     @Test
@@ -115,7 +113,7 @@ public class CrashConsistencyValidation {
 
         CrashableVSRB vsrb = new CrashableVSRB(store, START+8);
 
-        afterWriteStateTest(store, vsrb, "11", Arrays.asList("11")); //lieSize=4
+        afterWriteStateTest(store, vsrb, "11", Collections.singletonList("11")); //lieSize=4
         afterWriteStateTest(store, vsrb, "22", Arrays.asList("11", "22")); //lieSize=4
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("22", "3")); //lieSize=3 (but has space 4, so drStart!=drEnd)
 
@@ -125,10 +123,10 @@ public class CrashConsistencyValidation {
         VSBRDebugPrint.printContents("BEFORE RECOVERY: ", vsrb, store, String::new);
         vsrb = new CrashableVSRB(store, START+8);
         VSBRDebugPrint.printContents("AFTER RECOVERY: ", vsrb, store, String::new);
-        check(vsrb, Arrays.asList("44444"));
+        check(vsrb, Collections.singletonList("44444"));
         assertTrue(crashed);
 
-        afterWriteStateTest(store, vsrb, "5", Arrays.asList("5"));
+        afterWriteStateTest(store, vsrb, "5", Collections.singletonList("5"));
     }
 
 
@@ -214,7 +212,7 @@ public class CrashConsistencyValidation {
         System.out.println("VSBRDebugPrint.elementsToList(vsrb, String::new) = " + VSBRDebugPrint.elementsToList(vsrb, String::new));
         assertFalse(vsrb.isEmpty());
         assertEquals(1, vsrb.size());
-        check(vsrb, Arrays.asList("2823456"));
+        check(vsrb, Collections.singletonList("2823456"));
     }
 
     @Test
@@ -260,13 +258,13 @@ public class CrashConsistencyValidation {
         System.out.print("AFTER ADD: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
         assertFalse(vsrb.isEmpty());
         assertEquals(1, vsrb.size());
-        check(vsrb, Arrays.asList("55555567890123456789012"));
+        check(vsrb, Collections.singletonList("55555567890123456789012"));
     }
 
     private void genTestSomeData(TransparentBytesStorage store, int max) {
         CrashableVSRB vsrb = new CrashableVSRB(store, START+max);
 
-        afterWriteStateTest(store, vsrb, "1111111", Arrays.asList("1111111")); //lieSize=4
+        afterWriteStateTest(store, vsrb, "1111111", Collections.singletonList("1111111")); //lieSize=4
         afterWriteStateTest(store, vsrb, "222222222222", Arrays.asList("1111111", "222222222222")); //lieSize=4
         afterWriteStateTest(store, vsrb, "3", Arrays.asList("1111111", "222222222222", "3")); //lieSize=3 (but has space 4, so drStart!=drEnd)
     }
@@ -447,8 +445,6 @@ public class CrashConsistencyValidation {
 
     @Test
     public void fillItPrintItWrapItSameSized() {
-//        int max = 204;
-//        int num = 89;
         String str = "abcdefghijklmnopqrstuvxyz0123456789";
         for(int max = START + (str+"99").length()+ LIbae.calculateGeneratedLISize((str+"99").length()); max<1000; max+=19) {
             for (int num = 0; num < 100; num++) {
@@ -458,8 +454,6 @@ public class CrashConsistencyValidation {
     }
     @Test
     public void fillItPrintItWrapItVarSized() {
-//        int max = 321;
-//        int num = 28;
         for(int max=55;max<1000;max+=19) {
             for (int num = 0; num < 100; num++) {
                 numTestWRAPPINGWithRandomDeletions(CrashConsistencyValidation::utf8RandGenDifferentToLast, num, max);
@@ -472,58 +466,30 @@ public class CrashConsistencyValidation {
 
         Random r = new Random(1736485445);
 
-//        System.out.println("\n\n\nmax("+max+"), num("+num+")");
         for (int i = 0; i < num; i++) {
             byte[] e = deterministicGenerator.apply(vsrb, i);
-//            System.out.println("generated("+i+") = " + new String(e));
 
             List<byte[]> iterator;
             if (r.nextInt(22) == 0) {
-//                System.out.println("e = " + new String(e));
-//                System.out.println("e = " + Arrays.toString(e));
                 int nextInt = r.nextInt(CrashPoint.values().length);
-//                System.out.println("next-int = " + nextInt);
-//                System.out.println("CrashPoint.values() = " + Arrays.toString(CrashPoint.values()));
                 CrashPoint crash = CrashPoint.values()[nextInt];
                 vsrb.append(e, crash);
-//                System.out.println("added("+i+") = " + new String(e));
 
-//                System.out.print("BEFORE RECOVERY: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
                 vsrb = new CrashableVSRB(store, max);//THIS IS THE RECOVERY MECHANISM
-//                System.out.print("AFTER RECOVERY: ");VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
                 iterator = vsrb.iterator().collect();
                 if (!Arrays.equals(e, last(iterator))) {
                     i--;
-//                    System.out.println("lost data");
                 }
-//                System.out.println("crash = " + crash);
-//                assertFalse(vsrb.isEmpty());  vsrb CAN be empty here... in case we crashed with a single, large element
             } else {
                 boolean couldAdd = vsrb.append(e);
                 if(!couldAdd)
                     throw new IllegalArgumentException("deterministicGenerator generated an element too large: (num("+num+"), max("+max+"), e.length("+e.length+"))");
 
-//                System.out.println("added("+i+") = " + new String(e));
-//                VSBRDebugPrint.printMemoryLayout(vsrb, store, String::new);
                 assertFalse(vsrb.isEmpty());
                 iterator = vsrb.iterator().collect();
             }
 
-            for (int ii = 0; ii < iterator.size(); ii++) {
-                byte[] gen = deterministicGenerator.apply(vsrb, i - ii);
-                byte[] got = iterator.get(iterator.size() - (ii + 1));
-                try {
-                    assertArrayEquals(gen, got);
-                } catch (Throwable t) {
-                    System.out.println("i = " + i);
-                    System.out.println("ii = " + ii);
-                    System.out.println("iterator = " + iterator.stream().map(String::new).collect(Collectors.toList()));
-                    System.out.println("gen("+(i - ii)+") = " + new String(gen));
-                    System.out.println("got("+(iterator.size() - (ii + 1))+") = " + new String(got));
-                    VSBRDebugPrint.printContents("on array equality fail", vsrb, store, String::new);
-                    throw t;
-                }
-            }
+            validateElementsEqualToGenerator(iterator, deterministicGenerator, vsrb, store, i);
         }
     }
 
