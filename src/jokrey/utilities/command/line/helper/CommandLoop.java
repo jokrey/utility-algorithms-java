@@ -20,12 +20,26 @@ public class CommandLoop implements Runnable, AutoCloseable {
         addCommand("exit", "exits", args -> close());
     }
 
-    private Scanner s = new Scanner(System.in);
+    private final Scanner s = new Scanner(System.in);
     public String readLine() {
         try {
             return s.nextLine();
         } catch (Exception e) {
             return null;
+        }
+    }
+    public int readAndParseOr(int fallback) {
+        return readAndParseOr(null, fallback,null);
+    }
+    public int readAndParseOr(String prompt, int fallback, String failCasePrintString) {
+        try {
+            if(prompt != null)
+                System.out.println(prompt);
+            return Integer.parseInt(s.nextLine());
+        } catch (Exception e) {
+            if(failCasePrintString != null)
+                System.out.println(failCasePrintString);
+            return fallback;
         }
     }
     /**
