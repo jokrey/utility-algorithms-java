@@ -13,6 +13,9 @@ public class IteratorUtilities {
             @Override public R next() {
                 return conv.apply(iterator.next());
             }
+            @Override public String toString() {
+                return "map of "+iterator;
+            }
         };
     }
 
@@ -24,6 +27,9 @@ public class IteratorUtilities {
             }
             @Override public E next() {
                 return list.get(i--);
+            }
+            @Override public String toString() {
+                return "reverse of "+list;
             }
         };
     }
