@@ -57,7 +57,7 @@ public class LIbaeTest {
 
     public void checkReverseLIGenerationFor(int l) {
         byte[] libaeBytes = LIbae.generateReverseLI(l);
-        long[] bounds = LIbae.get_next_reverse_li_bounds(libaeBytes, libaeBytes.length-1, libaeBytes.length-1, (l+1) * 2L);//+1 for 0
+        long[] bounds = LIbae.get_next_reverse_li_bounds(libaeBytes, libaeBytes.length-1, (l+1) * 2L, 0);//+1 for 0
         assertNotNull(bounds);
         assertEquals(l, bounds[1]-bounds[0]);
     }
