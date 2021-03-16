@@ -86,8 +86,8 @@ public class FileStorage implements TransparentBytesStorage {
         try {
             synchronized (raf) {
                 raf.seek(0);
-                raf.write(content);
-                raf.setLength(content.length);
+                raf.write(content);//will append
+                if(raf.length() > content.length) raf.setLength(content.length);//truncate
             }
         } catch (IOException e) {
             throw new StorageSystemException("Internal FileStorage-Error("+e.getMessage()+").");
@@ -100,8 +100,10 @@ public class FileStorage implements TransparentBytesStorage {
             byte[] content;
             int actuallyRead;
             synchronized (raf) {
+                long contentSize = raf.length();
+                if(contentSize > Integer.MAX_VALUE) throw new IllegalStateException("File content does not fit array, use stream instead.");
                 raf.seek(0);
-                content = new byte[(int) raf.length()]; //might throw an exception, which is fine.
+                content = new byte[(int) contentSize]; //might throw an exception, which is fine.
                 actuallyRead = raf.read(content);
             }
             if(actuallyRead==content.length) {
@@ -114,6 +116,7 @@ public class FileStorage implements TransparentBytesStorage {
     }
 
 
+    //does only a setLength if end == contentSize()
     @Override public TransparentBytesStorage delete(long start, long end) throws StorageSystemException {
         try {
             long len = end - start;
@@ -140,6 +143,7 @@ public class FileStorage implements TransparentBytesStorage {
 
 
     @Override public TransparentBytesStorage set(long start, InputStream content, long content_length) throws StorageSystemException {
+        if(start > contentSize()) throw new IndexOutOfBoundsException();
         try {
             long expected_bytes_count = content_length;
             synchronized (raf) {
@@ -163,7 +167,9 @@ public class FileStorage implements TransparentBytesStorage {
         return this;
     }
 
+    //NOT SAFE IN CRASH
     @Override public TransparentBytesStorage insert(long start, byte[] val) {
+        if(start > contentSize()) throw new IndexOutOfBoundsException();
         long end = start + val.length;
         try {
             synchronized (raf) {
@@ -185,27 +191,22 @@ public class FileStorage implements TransparentBytesStorage {
         if(from < to && numToCopy > (to - from)) {
             throw new IllegalArgumentException("would override bytes in unspecified way - copy section first");
         }
+        if(numToCopy <= 0) return;
         synchronized (raf) {
             long buffer_size = io_buffer_size;
-//            if(from > to) {
-                //if from > to, we can just copy - read 'from' bytes, copy to 'to' bytes [potentially overriding bytes, but that does not matter]
-                for (long cur_write_index = 0; cur_write_index < numToCopy; cur_write_index += buffer_size) {
-                    byte[] rest_of_file_part = sub(from + cur_write_index, from + cur_write_index + Math.min(buffer_size, numToCopy));
+            for (long cur_write_index = 0; cur_write_index < numToCopy; cur_write_index += buffer_size) {
+                byte[] rest_of_file_part = sub(from + cur_write_index, from + cur_write_index + Math.min(buffer_size, numToCopy));
 
-                    raf.seek(to + cur_write_index);
-                    raf.write(rest_of_file_part);
-//                }
+                raf.seek(to + cur_write_index);
+                raf.write(rest_of_file_part);
             }
         }
     }
 
     @Override public TransparentBytesStorage set(long start, byte[] part, int off, int len) throws StorageSystemException {
-//        long size = contentSize();
-//        if(start > size)
-//            throw new StorageSystemException("IndexOutOfBounds, start > size");
+        if(start > contentSize()) throw new IndexOutOfBoundsException();
         try {
             synchronized (raf) {
-                raf.setLength(Math.max(start + (len -off), contentSize())); //pre ensure length met
                 raf.seek(start);
                 raf.write(part, off,  Math.min(part.length-off, len -off));
             }
@@ -230,10 +231,9 @@ public class FileStorage implements TransparentBytesStorage {
 
     @Override public TransparentBytesStorage set(long at, byte[]... parts) throws StorageSystemException {
         try {
-            long partsLength = 0;
-            for(byte[] part:parts) partsLength += part.length;
+//            long partsLength = 0;
+//            for(byte[] part:parts) partsLength += part.length;
             synchronized (raf) {
-                raf.setLength(Math.max(at + partsLength, contentSize())); //pre ensure length met
                 raf.seek(at);
                 for(byte[] part:parts)
                     raf.write(part);
