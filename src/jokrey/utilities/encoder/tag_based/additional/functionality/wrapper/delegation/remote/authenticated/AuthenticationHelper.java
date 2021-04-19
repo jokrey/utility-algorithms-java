@@ -2,7 +2,6 @@ package jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.dele
 
 import jokrey.utilities.transparent_storage.StorageSystemException;
 import jokrey.utilities.network.mcnp.MCNP_Connection;
-import sun.security.ec.ECPublicKeyImpl;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -37,13 +36,10 @@ final class AuthenticationHelper {
         return kpg.generateKeyPair();
     }
     public static byte[] get_raw_public_key_bytes(KeyPair kp) {
-        return ((ECPublicKeyImpl)kp.getPublic()).getEncodedPublicValue();
-
-//        //ANDROID::
-//        byte[] enc = kp.getPublic().getEncoded();
-//        byte[] actual_without_der = new byte[65];
-//        System.arraycopy(enc, enc.length-actual_without_der.length, actual_without_der, 0, actual_without_der.length);
-//        return actual_without_der;
+        byte[] enc = kp.getPublic().getEncoded();
+        byte[] actual_without_der = new byte[65];
+        System.arraycopy(enc, enc.length-actual_without_der.length, actual_without_der, 0, actual_without_der.length);
+        return actual_without_der;
     }
     public static PublicKey get_ec_public_key_from(byte[] encoded_pub_key) throws InvalidKeySpecException {
         return convertP256Key(encoded_pub_key);
