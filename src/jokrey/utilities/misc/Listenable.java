@@ -22,4 +22,8 @@ public class Listenable<E> {
         for(Listener<E> listener : listeners)
             listener.notified(e);
     }
+
+    public synchronized void clearListeners() {
+        listeners.clear();
+    }
 }
