@@ -22,7 +22,7 @@ import java.util.Iterator;
  *       (Since both cannot be altered externally)
  *   The answer lies in the much more declarative code.
  *   When reading from this system each time one has to exactly specify what one wants to read.
- *   Additionally the order or reading(decoding) does not matter anymore.
+ *   Additionally, the order or reading(decoding) does not matter anymore.
  *
  * NOTE: This is ENCODING, NOT ENCRYPTING
  *    Though the results of this method may at times be hard to read for any human, should the data be sensitive, then encryption is naturally still required.

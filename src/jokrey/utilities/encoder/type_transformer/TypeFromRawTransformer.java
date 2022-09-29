@@ -26,7 +26,7 @@ public interface TypeFromRawTransformer<SF> {
      * if entry is null, null will be returned.
      * @param entry An Object of supported type T.
      *              Supported types typically include String, Boolean, Byte, Integer, Long and their n dimensional arrays(including primitive 1d arrays).
-     *              Additionally typically supports classes implementing {@link EncodableAsString} and {@link EncodableAsBytes}
+     *              Additionally, typically supports classes implementing {@link EncodableAsString} and {@link EncodableAsBytes}
      *              (though only their implemented versions, and only if they have a no-arg constructor see {@link EncodableAsBytes#createFromEncodedBytes(byte[], Class)} for details ).
      * @return newly created object of type T.
      * @throws NotTransformableException if entry==null || entry type not supported

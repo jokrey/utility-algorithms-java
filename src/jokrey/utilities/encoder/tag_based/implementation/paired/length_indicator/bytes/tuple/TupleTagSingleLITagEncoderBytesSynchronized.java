@@ -10,7 +10,7 @@ import jokrey.utilities.encoder.tag_based.tuple_tag.SynchronizedTupleTagBasedEnc
 import java.io.InputStream;
 
 /**
- * Like it's superclass {@link TupleTagSingleLITagEncoderBytes}, but additionally guarantees Thread Safety for all of its standard operations.
+ * Like it's superclass {@link TupleTagSingleLITagEncoderBytes}, but Additionally, guarantees Thread Safety for all of its standard operations.
  *
  * @author jokrey
  */

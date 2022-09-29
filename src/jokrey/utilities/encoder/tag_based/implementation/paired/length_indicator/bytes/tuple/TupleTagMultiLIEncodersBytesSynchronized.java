@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Like it's superclass {@link TupleTagMultiLIEncodersBytes}, but additionally guarantees Thread Safety for all of its standard operations.
+ * Like it's superclass {@link TupleTagMultiLIEncodersBytes}, but Additionally, guarantees Thread Safety for all of its standard operations.
  *
  * @author jokrey
  */

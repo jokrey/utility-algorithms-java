@@ -6,7 +6,7 @@ import java.util.Calendar;
 /**
  * maybe remove call to java.util.Calendar. Replace with math based on System.currentTimeMillis()
  *
- * Stores a single integer and interprets it as a time in a day(i.e seconds greater than 0 hours and smaller than 24)
+ * Stores a single integer and interprets it as a time in a day(i.e. seconds greater than 0 hours and smaller than 24)
  *
  * immutable
  */

@@ -7,7 +7,7 @@ import jokrey.utilities.encoder.type_transformer.string.TypeToStringTransformer;
 import java.lang.reflect.Array;
 
 /**
- * Implementation of {@link TypeToStringTransformer} additionally using lise for array transformation.
+ * Implementation of {@link TypeToStringTransformer} Additionally, using lise for array transformation.
  *
  * @author jokrey
  */

@@ -9,7 +9,7 @@ However the client is required to be thread safe. The server expects a certain s
 
 The server on the other hand should ALSO feel exactly like a local litbe.
   (this entails that every single litbe method has to work, exist and behave as expected)
-  The server is actually just is an litbe that additionally accepts, answers and stores requests from the client in it's own underlying storage system.
+  The server is actually just is an litbe that Additionally, accepts, answers and stores requests from the client in it's own underlying storage system.
 
 So the whole system can feel like bidirectional, stored communication(for example a blackboard {even with callbacks}) or/and like a simple database.
 

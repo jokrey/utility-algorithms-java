@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * RemoteStorageServer to be accessed over a network by {@link RemoteStorage}.
- * On top of it's main use as the server backend it additionally is an Implementation of {@link TransparentBytesStorage}.
+ * On top of its main use as the server backend it additionally is an Implementation of {@link TransparentBytesStorage}.
  *
  *
  * Thread safe when viewed as only Storage.

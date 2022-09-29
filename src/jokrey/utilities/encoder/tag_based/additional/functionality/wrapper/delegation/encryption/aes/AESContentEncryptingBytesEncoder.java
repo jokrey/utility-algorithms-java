@@ -14,7 +14,7 @@ import java.util.Iterator;
 /**
  * Uses AES with CBC to encrypt content and tag {@link AESHelper}.
  * Might produce slightly longer output because for each entry the result byte string length has to be padded to be divisible by 16.
- * Additionally another 16 bits are required to store the iv aes requires.
+ * Additionally, another 16 bits are required to store the iv aes requires.
  *
  * Encryption will be completely transparent to the user. As long as the key is correct.
  *

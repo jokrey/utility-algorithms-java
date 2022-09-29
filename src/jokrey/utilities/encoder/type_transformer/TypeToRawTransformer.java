@@ -15,7 +15,7 @@ public interface TypeToRawTransformer<SF> {
      *
      * @param entry An Object of supported type T.
      *              Supported types typically include String, Boolean, Byte, Integer, Long and their n dimensional arrays(including primitive 1d arrays).
-     *              Additionally typically supports classes implementing EncodableAsString and EncodableAsBytes.
+     *              Additionally, typically supports classes implementing EncodableAsString and EncodableAsBytes.
      *              Has to be not null
      * @return entry as type SF.
      * @throws NotTransformableException if entry==null || entry type not supported

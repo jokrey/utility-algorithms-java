@@ -70,10 +70,10 @@ final class AuthenticationHelper {
         if(pub1bigger==null) { //if pub1bigger == null, then both public keys are equal by impossible chance and the order does not matter.
             digest.update(pub_key_2);
             digest.update(pub_key_1);
-        } else if(pub1bigger == true) { //I know, but if i compare against null before, then this would be just confusing to be
+        } else if(pub1bigger) { //I know, but if i compare against null before, then this would be just confusing to be
             digest.update(pub_key_1);
             digest.update(pub_key_2);
-        } else if(pub1bigger == false) { //I know, but if i compare against null before, then this would be just confusing to be
+        } else if(!pub1bigger) { //I know, but if i compare against null before, then this would be just confusing to be
             digest.update(pub_key_2);
             digest.update(pub_key_1);
         }
@@ -119,7 +119,7 @@ final class AuthenticationHelper {
 
 
 
-    // is it fine to send the nonce like this? Otherwise we might have to permutate the nonce into multiple blocks at least..
+    // is it fine to send the nonce like this? Otherwise, we might have to permutate the nonce into multiple blocks at least..
 
     public static void send_tag(MCNP_Connection connection, String tag, byte[] session_key) throws NoSuchPaddingException, InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, IOException {
         byte[] nonce = AuthenticationHelper.generate_nonce();

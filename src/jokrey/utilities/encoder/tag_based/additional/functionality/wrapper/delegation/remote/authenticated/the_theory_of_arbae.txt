@@ -49,7 +49,7 @@ Since user's are not supposed to feel the presence of other user's their tag's h
 This is done by simply sha1 hashing the user_names utf-8 decoded bytes and then using base64 to get a string representation.
 Now every tag the client want's to alter has to start with that rather abstract representation of it's username.
 It is important to note that every base64(sha1(user_name))-string has the exact same payloadLength.
-This is important. Otherwise a user with the name "bob" could alter entries of the user "bobby", but simply trying to alter one of his tags, but adding "by"- as a prefix.
+This is important. Otherwise, a user with the name "bob" could alter entries of the user "bobby", but simply trying to alter one of his tags, but adding "by"- as a prefix.
 
 Where to store the user passwords?
 Obviously we want to store it in the same database as everybody else.

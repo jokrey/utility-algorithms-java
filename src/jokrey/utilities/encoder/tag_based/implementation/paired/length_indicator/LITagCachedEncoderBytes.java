@@ -10,7 +10,7 @@ import jokrey.utilities.transparent_storage.bytes.TransparentBytesStorage;
 import java.io.InputStream;
 
 /**
- * Version of {@link LITagCachedEncoderBytes} that additionally implements {@link TagBasedEncoderBytes} and supports it's methods.
+ * Version of {@link LITagCachedEncoderBytes} that Additionally, implements {@link TagBasedEncoderBytes} and supports it's methods.
  *
  * @author jokrey
  */

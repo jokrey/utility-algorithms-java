@@ -7,7 +7,7 @@ import jokrey.utilities.encoder.type_transformer.bytes.TypeToBytesTransformer;
 import java.lang.reflect.Array;
 
 /**
- * Implementation of {@link TypeToBytesTransformer} additionally using libae for array transformation.
+ * Implementation of {@link TypeToBytesTransformer} Additionally, using libae for array transformation.
  *
  * @author jokrey
  */

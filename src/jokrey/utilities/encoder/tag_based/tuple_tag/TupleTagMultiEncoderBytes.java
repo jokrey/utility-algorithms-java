@@ -7,7 +7,7 @@ import jokrey.utilities.transparent_storage.StorageSystemException;
 import java.io.InputStream;
 
 /**
- * Like {@link TupleTagMultiEncoder}, but additionally support the {@link TupleTagBasedEncoderBytes} interface methods.
+ * Like {@link TupleTagMultiEncoder}, but additionally, support the {@link TupleTagBasedEncoderBytes} interface methods.
  *
  * @author jokrey
  */

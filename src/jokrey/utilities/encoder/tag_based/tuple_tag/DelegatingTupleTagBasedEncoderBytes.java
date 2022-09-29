@@ -8,7 +8,7 @@ import jokrey.utilities.encoder.tag_based.additional.functionality.wrapper.deleg
 import java.io.InputStream;
 
 /**
- * Most simple delegation wrapper like {@link DelegatingTupleTagBasedEncoder}, but additionally relays operations to {@link TupleTagBasedEncoderBytes}.
+ * Most simple delegation wrapper like {@link DelegatingTupleTagBasedEncoder}, but Additionally, relays operations to {@link TupleTagBasedEncoderBytes}.
  *
  * @author jokrey
  */
